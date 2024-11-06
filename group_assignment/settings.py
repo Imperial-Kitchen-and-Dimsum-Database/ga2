@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure--pr-u4qhw-@^baq+7^f33!tvc&3(8n2-d_l&qi^v%gmdx#k6^@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ["localhost", "127.0.0.1"]
 
 
 # Application definition
@@ -37,6 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'main',
+    'authentication',
+    'mypay_service',
+    'testi_vouchers',
 ]
 
 MIDDLEWARE = [

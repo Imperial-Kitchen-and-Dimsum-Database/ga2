@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class TAndDConfig(AppConfig):
+class TestiVouchersConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 't_and_d'
+    name = 'testi_vouchers'
