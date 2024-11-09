@@ -6,6 +6,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('main.urls')),
     # path('authentication/', include('authentication.urls')),
-    # path('mypay_service/', include('mypay_service.urls')),
-    # path('testi_vouchers/', include('testi_vouchers.urls')),
+    path('', include('mypay_service.urls')),
+    path('', include('testi_vouchers.urls')),
 ]

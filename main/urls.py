@@ -5,7 +5,6 @@ app_name = 'main'
 
 urlpatterns = [
     path('', show_main, name='show_main'),
-    path('', include('mypay_service.urls')),
     path('service/', service, name='service'),
     path('subcategory/', subcategory, name='subcategory'),
 ]
