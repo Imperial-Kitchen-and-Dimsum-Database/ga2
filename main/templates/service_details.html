@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block content %}
+{% include 'navbar.html' %}
+<div class="mt-24">
+
+<h1 class="text-3xl font-semibold text-center text-gray-800 dark:text-white">Services</h1>
+<a  href="{% url 'main:subcategory' %}" class="text-black font-semibold hover:text-gray-600 transition">Example Subcategory</a>
+{% endblock content %}

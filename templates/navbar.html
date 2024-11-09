@@ -1,0 +1,35 @@
+<nav class="bg-white shadow-lg fixed top-4 left-1/2 transform -translate-x-1/2 z-40 w-3/4 rounded-md py-2 px-6">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+        <div class="flex items-center space-x-8">
+            <h1 class="text-2xl font-bold text-black">Qlean</h1>
+            <a href="{% url 'main:show_main' %}" class="text-black font-semibold hover:text-gray-600 transition">Home</a>
+            <a href="{% url 'main:mypay_dashboard' %}" class="text-black font-semibold hover:text-gray-600 transition">MyPay</a>
+            <a href="{% url 'main:service' %}" class="text-black font-semibold hover:text-gray-600 transition">Services</a>
+        </div>
+        <div class="md:hidden flex items-center">
+            <button class="mobile-menu-button">
+                <svg class="w-6 h-6 text-black" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+                    <path d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Mobile menu -->
+    <div class="mobile-menu hidden md:hidden px-4 w-full pt-2">
+        <div class="space-y-1">
+            <span class="block text-gray-700 px-3 py-2">Welcome, {{ user.username }}</span>
+            <a href="{% url 'main:show_main' %}" class="block text-center text-black font-semibold py-2 px-4 hover:text-gray-600 transition">Home</a>
+            <a href="{% url 'main:mypay_dashboard' %}" class="block text-center text-black font-semibold py-2 px-4 hover:text-gray-600 transition">MyPay</a>
+        </div>
+    </div>
+
+    <script>
+        const btn = document.querySelector("button.mobile-menu-button");
+        const menu = document.querySelector(".mobile-menu");
+
+        btn.addEventListener("click", () => {
+            menu.classList.toggle("hidden");
+        });
+    </script>
+</nav>
