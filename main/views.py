@@ -12,3 +12,7 @@ def service(request):
 
 def subcategory(request):
     return render(request, "subcategory_page.html")
+
+def status(request):
+    return render(request,"status.html" )
+           

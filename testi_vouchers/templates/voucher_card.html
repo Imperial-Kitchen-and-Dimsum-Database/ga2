@@ -6,6 +6,8 @@
         padding: 1.5rem;
         overflow: hidden;
         box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        width: 20rem;
+        height: 20rem;
     }
 
     .voucher-card::before,
@@ -28,27 +30,135 @@
         right: -0.75rem;
     }
 
+    .buy-now-button {
+        position: absolute;
+        bottom: 1rem;
+        right: 1rem;
+    }
 
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        justify-content: center;
+        align-items: center;
+    }
+
+    .modal-content {
+        background: white;
+        padding: 2rem;
+        border-radius: 0.5rem;
+        max-width: 400px;
+        width: 100%;
+    }
 </style>
 
+<!-- Card 1 -->
 <div class="flex justify-center w-full py-8">
-    <div class="voucher-card relative max-w-md w-80 bg-purple-300 rounded-2xl text-white">
-        <!-- Card Content -->
+    <div class="voucher-card relative bg-purple-300 rounded-2xl text-white">
         <div class="p-4">
-            <h2 class="text-2xl font-bold text-center">Voucher</h2>
-            <p class="text-center text-lg mt-1">30% Off all Home Cleaning</p>
-            <p class="text-center mt-3 font-semibold">Discount Code: <span class="font-mono text-base bg-gray-900 px-2 py-1 rounded">AISLE30</span></p>
-            <p class="text-center mt-1 text-sm">Minimum Transaction: $100</p>
+            <h2 class="text-2xl font-bold text-center">30% Off all Home Cleaning</h2>
+            <p class="text-center mt-1 font-semibold">Discount Code: <span class="font-mono text-base bg-gray-900 px-2 py-1 rounded">AISLE30</span></p>
+            <p class="text-center mt-1 text-sm">Minimum Transaction: Rp.350,000</p>
             <p class="text-center mt-1 text-sm">Valid for: 7 days</p>
             <p class="text-center mt-1 text-sm">User Quota: 50 users</p>
-            <p class="text-center mt-1 text-sm">Price: $5</p>
-
-            
-            <div class="flex justify-center mt-3">
-                <button class="bg-white text-yellow-400 font-bold py-1.5 px-3 rounded-lg shadow-lg hover:bg-gray-100 text-sm">
-                    Buy Now
-                </button>
-            </div>
+            <p class="text-center mt-1 text-sm">Price: Rp.45,000</p>
+        </div>
+        <div class="buy-now-button">
+            <button onclick="showSuccessModal()" class="bg-white text-black font-bold py-1.5 px-3 rounded-lg shadow-lg hover:bg-gray-100 text-sm">
+                Buy Now
+            </button>
         </div>
     </div>
 </div>
+
+<!-- Card 2 -->
+<div class="flex justify-center w-full py-8">
+    <div class="voucher-card relative bg-purple-300 rounded-2xl text-white">
+        <div class="p-4">
+            <h2 class="text-2xl font-bold text-center">40% Off all Kitchen Cleaning</h2>
+            <p class="text-center mt-1 font-semibold">Discount Code: <span class="font-mono text-base bg-gray-900 px-2 py-1 rounded">JKT20CLEAN</span></p>
+            <p class="text-center mt-1 text-sm">Minimum Transaction: Rp.200,000</p>
+            <p class="text-center mt-1 text-sm">Valid for: 14 days</p>
+            <p class="text-center mt-1 text-sm">User Quota: 20 users</p>
+            <p class="text-center mt-1 text-sm">Price: Rp.50,000</p>
+        </div>
+        <div class="buy-now-button">
+            <button onclick="showFailureModal()" class="bg-white text-black font-bold py-1.5 px-3 rounded-lg shadow-lg hover:bg-gray-100 text-sm">
+                Buy Now
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Card 1 -->
+<div class="flex justify-center w-full py-8">
+    <div class="voucher-card relative bg-purple-300 rounded-2xl text-white">
+        <div class="p-4">
+            <h2 class="text-2xl font-bold text-center">30% Off all Home Cleaning</h2>
+            <p class="text-center mt-1 font-semibold">Discount Code: <span class="font-mono text-base bg-gray-900 px-2 py-1 rounded">AISLE30</span></p>
+            <p class="text-center mt-1 text-sm">Minimum Transaction: Rp.350,000</p>
+            <p class="text-center mt-1 text-sm">Valid for: 7 days</p>
+            <p class="text-center mt-1 text-sm">User Quota: 50 users</p>
+            <p class="text-center mt-1 text-sm">Price: Rp.45,000</p>
+        </div>
+        <div class="buy-now-button">
+            <button onclick="showSuccessModal()" class="bg-white text-black font-bold py-1.5 px-3 rounded-lg shadow-lg hover:bg-gray-100 text-sm">
+                Buy Now
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    function showSuccessModal() {
+        const modal = document.createElement('div');
+        modal.className = 'modal flex';
+        modal.id = 'dynamicModal';
+        
+        const voucherCode = 'AISLE30';
+        const validUntil = new Date();
+        validUntil.setDate(validUntil.getDate() + 7);
+        const formattedDate = validUntil.toLocaleDateString();
+
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h3 class="text-xl font-bold text-green-600 mb-4">SUCCESS</h3>
+                <p>Congratulations! You have successfully bought a voucher with the code ${voucherCode}. This voucher can be used until ${formattedDate} with a usage quota of 50.</p>
+                <button onclick="closeModal()" class="bg-green-500 text-white font-semibold py-2 px-4 rounded mt-4">Close</button>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        modal.style.display = 'flex';
+    }
+
+    function showFailureModal() {
+        const modal = document.createElement('div');
+        modal.className = 'modal flex';
+        modal.id = 'dynamicModal';
+
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h3 class="text-xl font-bold text-red-600 mb-4">FAILED</h3>
+                <p>Sorry, your balance is not enough to buy this voucher.</p>
+                <button onclick="closeModal()" class="bg-red-500 text-white font-semibold py-2 px-4 rounded mt-4">Close</button>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        modal.style.display = 'flex';
+    }
+
+    function closeModal() {
+        const modal = document.getElementById('dynamicModal');
+        if (modal) {
+            modal.remove();
+        }
+    }
+</script>
