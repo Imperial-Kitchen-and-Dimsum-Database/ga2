@@ -5,6 +5,7 @@
             <a href="{% url 'main:show_main' %}" class="text-black font-semibold hover:text-gray-600 transition">Home</a>
             <a href="{% url 'mypay_service:mypay_dashboard' %}" class="text-black font-semibold hover:text-gray-600 transition">MyPay</a>
             <a href="{% url 'main:service' %}" class="text-black font-semibold hover:text-gray-600 transition">Services</a>
+            <a href="{% url 'main:status' %}" class="text-black font-semibold hover:text-gray-600 transition">View Status</a>
             <a href="{% url 'testi_vouchers:vouchers' %}" class="text-black font-semibold hover:text-gray-600 transition">Vouchers</a>
         </div>
         <div class="md:hidden flex items-center">
@@ -22,6 +23,7 @@
             <span class="block text-gray-700 px-3 py-2">Welcome, {{ user.username }}</span>
             <a href="{% url 'main:show_main' %}" class="block text-center text-black font-semibold py-2 px-4 hover:text-gray-600 transition">Home</a>
             <a href="{% url 'mypay_service:mypay_dashboard' %}" class="block text-center text-black font-semibold py-2 px-4 hover:text-gray-600 transition">MyPay</a>
+            <a href="{% url 'main:status' %}" class="text-black font-semibold hover:text-gray-600 transition">View Status</a>
             <a href="{% url 'testi_vouchers:vouchers' %}" class="text-black font-semibold hover:text-gray-600 transition">Vouchers</a>
         </div>
     </div>
