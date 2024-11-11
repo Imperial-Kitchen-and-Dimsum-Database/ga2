@@ -17,30 +17,32 @@
                             <i class="fas fa-arrow-up mr-2"></i>Send
                         </button>
                         <button class="bg-white text-yellow-500 hover:bg-yellow-50 font-bold py-2 px-4 rounded-lg transition duration-300 flex items-center">
-                            <i class="fas fa-arrow-down mr-2"></i>Receive
+                            <i class="fas fa-arrow-down mr-2"></i>Deposit
                         </button>
                     </div>
                 </div>
                 <div class="p-6 bg-white border border-gray-200 rounded-lg">
                     <h3 class="text-xl font-semibold mb-2 text-gray-800">Quick Actions</h3>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button class="bg-gray-50 hover:bg-gray-100 text-gray-700 py-2 px-4 rounded-lg transition duration-300 text-sm">
-                            <i class="fas fa-credit-card mr-2"></i>Pay Bills
-                        </button>
-                        <button class="bg-gray-50 hover:bg-gray-100 text-gray-700 py-2 px-4 rounded-lg transition duration-300 text-sm">
-                            <i class="fas fa-exchange-alt mr-2"></i>Transfer
-                        </button>
-                        <button class="bg-gray-50 hover:bg-gray-100 text-gray-700 py-2 px-4 rounded-lg transition duration-300 text-sm">
-                            <i class="fas fa-history mr-2"></i>History
-                        </button>
-                        <button class="bg-gray-50 hover:bg-gray-100 text-gray-700 py-2 px-4 rounded-lg transition duration-300 text-sm">
-                            <i class="fas fa-chart-line mr-2"></i>Analytics
-                        </button>
+                    <div class="bg-white h-60">
+                        <div class="grid grid-cols-2 gap-2 h-full">    
+                            <button class="bg-gray-50 hover:bg-gray-100 text-gray-700 py-2 px-4 rounded-lg transition duration-300 text-sm flex items-center justify-center">
+                                <span class="material-icons mr-2">credit_card</span>Pay Bills
+                            </button>
+                            <button class="bg-gray-50 hover:bg-gray-100 text-gray-700 py-2 px-4 rounded-lg transition duration-300 text-sm flex items-center justify-center">
+                                <span class="material-icons mr-2">swap_horiz</span>Transfer
+                            </button>
+                            <button class="bg-gray-50 hover:bg-gray-100 text-gray-700 py-2 px-4 rounded-lg transition duration-300 text-sm flex items-center justify-center">
+                                <span class="material-icons mr-2">history</span>History
+                            </button>
+                            <button class="bg-gray-50 hover:bg-gray-100 text-gray-700 py-2 px-4 rounded-lg transition duration-300 text-sm flex items-center justify-center">
+                                <span class="material-icons mr-2">show_chart</span>Analytics
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div class="p-6 bg-white border border-gray-200 rounded-lg">
                     <h3 class="text-xl font-semibold mb-8 text-gray-800">Spending Overview</h3>
-                    <div class="relative w-full h-32 mb-8">
+                    <div class="relative w-full h-32 mb-8 mt-16">
                         <canvas id="spendingChart" ></canvas>
                     </div>
                 </div>
@@ -77,7 +79,7 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
                                 <button class="text-yellow-500 hover:text-yellow-600">
-                                    <i class="fas fa-eye"></i>
+                                    <i class="material-symbols-outlined">visibility</i>
                                 </button>
                             </td>
                         </tr>
@@ -88,6 +90,7 @@
         </div>
     </div>
 </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Add this line to include Chart.js -->
     <script>
         const ctx = document.getElementById('spendingChart').getContext('2d');
         const spendingChart = new Chart(ctx, {
@@ -133,4 +136,6 @@
             }
         });
     </script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> 
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=visibility" />
 {% endblock content %}

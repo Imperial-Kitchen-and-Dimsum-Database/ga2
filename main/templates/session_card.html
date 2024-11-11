@@ -1,0 +1,61 @@
+{% load static %}
+
+<div class="bg-white rounded-lg shadow-md p-6 mb-4 transition-all hover:shadow-lg">
+    <div class="flex justify-between items-start">
+        <!-- Session Info -->
+        <div class="flex-1">
+            <h3 class="text-xl font-bold text-gray-800">{{ session.name }}</h3>
+            <div class="mt-2 space-y-2">
+                <p class="text-gray-600">
+                    <span class="inline-block w-24">Duration:</span>
+                    <span class="font-medium">{{ session.duration }} hours</span>
+                </p>
+                <p class="text-gray-600">
+                    <span class="inline-block w-24">Price:</span>
+                    <span class="font-medium">${{ session.price }}</span>
+                </p>
+            </div>
+
+            <button class="session-toggle-btn bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 px-4 rounded-lg mt-8 transition-colors" 
+                data-session-name="{{ session.name }}"
+                data-session-price="{{ session.price }}"
+                data-session-duration="{{ session.duration }}"
+                data-selected="false">
+                Select
+            </button>
+        </div>
+        <div class="w-64 h-32 bg-gray-200 rounded-lg flex-shrink-0"></div>
+    </div>
+</div>
+
+<script>
+    document.querySelectorAll('.session-toggle-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const isSelected = this.getAttribute('data-selected') === 'true';
+            
+            // Deselect if already selected
+            if (isSelected) {
+                this.classList.remove('bg-black', 'text-white');
+                this.classList.add('bg-yellow-400', 'text-black');
+                this.textContent = 'Select';
+                this.setAttribute('data-selected', 'false');
+            } 
+            // Select if not selected
+            else {
+                // Deselect all other buttons first
+                document.querySelectorAll('.session-toggle-btn').forEach(btn => {
+                    btn.classList.remove('bg-black', 'text-white');
+                    btn.classList.add('bg-yellow-400', 'text-black');
+                    btn.textContent = 'Select';
+                    btn.setAttribute('data-selected', 'false');
+                });
+    
+                // Select this button
+                this.classList.remove('bg-yellow-400', 'text-black');
+                this.classList.add('bg-black', 'text-white');
+                this.textContent = 'Selected';
+                this.setAttribute('data-selected', 'true');
+            }
+        });
+    });
+    </script>
