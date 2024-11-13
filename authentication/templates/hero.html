@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block meta %}
+<link rel="stylesheet" href="{% static 'css/global.css' %}">
+<link rel="stylesheet" href="{% static 'css/authstyles.css' %}">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
+{% endblock meta %}
+{% block content %}
+{% include 'navbar.html' %}
+<main>
+<header class="section autoShow">
+    <div class="text">
+        <h2>the <span class="bold">solution</span></h2>
+        <p>to your better living. Come back to a home full of fresh laundry, sparkling floors, and clean counters.</p>
+    </div>
+    <img src="{% static 'image/puzzle.png' %}" alt="Puzzle" class = "autoRotate">
+</header>
+
+<section class="section autoShow">
+    <img src="{% static 'image/sun.png' %}" alt="Sun" class ="autoRotate">
+    <div class="text">
+        <h2><span>anytime.</span> anywhere.</h2>
+        <p>With our lightning-fast service and our digitalized processes, convenience is now at the tips of your fingers.</p>
+    </div>
+</section>
+
+<section class="section autoShow">
+    <div class="text">
+        <h2>available <span>day to night.</span></h2>
+        <p>Our 18-hour shift and country-wide coverage ensures we've got your back for any situation, and any occassion.</p>
+    </div>
+    <img src="{% static 'image/moon.png' %}" alt="Moon" class="autoFloat">
+</section>
+
+<section class="section autoShow">
+    <img src="{% static 'image/tools.png' %}" alt="Tools" class="autoFloat">
+    <div class="text">
+        <h2>our <span>QLEANERS</span> get it done.</h2>
+        <p>Our experienced and meticulous QLEANERS will spare no stain and leave not a trace behind.</p>
+    </div>
+</section>
+
+<div class="image-container">
+    <img src="{% static 'image/cleaners.png' %}" alt="Cleaners" class="autoShow">
+</div>
+
+<section class="get-started">
+    <p><a href="#">get started.</a></p>
+</section>
+</main>
+{% include 'footer.html' %}
+{% endblock content %}
