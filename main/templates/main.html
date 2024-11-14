@@ -55,71 +55,20 @@
 
     <!-- Services Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        <!-- Home Cleaning Category -->
-        <div class="bg-white rounded-lg shadow-lg p-6" data-category="home-cleaning">
-            <h2 class="text-2xl font-semibold mb-4">Home Cleaning</h2>
+        {% for service in services %}
+        <div class="bg-white rounded-lg shadow-lg p-6{% if service.category == 'haircare' %} border-2 border-blue-500{% endif %}" data-category="{{ service.category }}">
+            <h2 class="text-2xl font-semibold mb-4">{{ service.title }}</h2>
             <div class="space-y-2">
+                {% for subcategory in service.subcategories %}
                 <a href="{% url 'main:subcategory' %}" class="subcategory-item block p-2 bg-yellow-200 rounded no-underline text-inherit hover:bg-yellow-300">
-                    Daily Cleaning
+                    {{ subcategory }}
                 </a>
-                <a href="{% url 'main:subcategory' %}" class="subcategory-item block p-2 bg-yellow-200 rounded no-underline text-inherit hover:bg-yellow-300">
-                    Ironing
-                </a>
+                {% endfor %}
             </div>
         </div>
-
-        <!-- Deep Cleaning Category -->
-        <div class="bg-white rounded-lg shadow-lg p-6" data-category="deep-cleaning">
-            <h2 class="text-2xl font-semibold mb-4">Deep Cleaning</h2>
-            <div class="space-y-2">
-                <a href="{% url 'main:subcategory' %}" class="subcategory-item block p-2 bg-yellow-200 rounded hover:bg-yellow-300">
-                    Floor and Carpet Cleaning
-                </a>
-                <a href="{% url 'main:subcategory' %}" class="subcategory-item block p-2 bg-yellow-200 rounded hover:bg-yellow-300">
-                    Bathroom and Tile Cleaning
-                </a>
-            </div>
-        </div>
-
-        <!-- Air Conditioning Service Category -->
-        <div class="bg-white rounded-lg shadow-lg p-6" data-category="air-conditioning">
-            <h2 class="text-2xl font-semibold mb-4">Air Conditioning Service</h2>
-            <div class="space-y-2">
-                <a href="{% url 'main:subcategory' %}" class="subcategory-item block p-2 bg-yellow-200 rounded hover:bg-yellow-300">
-                    Filter Replacement
-                </a>
-                <a href="{% url 'main:subcategory' %}" class="subcategory-item block p-2 bg-yellow-200 rounded hover:bg-yellow-300">
-                    Full AC Maintenance
-                </a>
-            </div>
-        </div>
-
-        <!-- Massage Category -->
-        <div class="bg-white rounded-lg shadow-lg p-6" data-category="massage">
-            <h2 class="text-2xl font-semibold mb-4">Massage</h2>
-            <div class="space-y-2">
-                <a href="{% url 'main:subcategory' %}" class="subcategory-item block p-2 bg-yellow-200 rounded hover:bg-yellow-300">
-                    Hot Stone Massage
-                </a>
-                <a href="{% url 'main:subcategory' %}" class="subcategory-item block p-2 bg-yellow-200 rounded hover:bg-yellow-300">
-                    Aromatherapy Massage
-                </a>
-            </div>
-        </div>
-
-        <!-- Haircare Category -->
-        <div class="bg-white rounded-lg shadow-lg p-6 border-2 border-blue-500" data-category="haircare">
-            <h2 class="text-2xl font-semibold mb-4">Haircare</h2>
-            <div class="space-y-2">
-                <a href="{% url 'main:subcategory' %}" class="subcategory-item block p-2 bg-yellow-200 rounded hover:bg-yellow-300">
-                    Haircut
-                </a>
-                <a href="{% url 'main:subcategory' %}" class="subcategory-item block p-2 bg-yellow-200 rounded hover:bg-yellow-300">
-                    Hair Coloring
-                </a>
-            </div>
-        </div>
+        {% endfor %}
     </div>
+
 </div>
 
 {% include 'footer.html' %}

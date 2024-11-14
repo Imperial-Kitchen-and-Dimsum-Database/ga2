@@ -1,9 +1,35 @@
 from django.shortcuts import render
 
-
 def show_main(request):
     context = {
-        'name' : "Database Assignment"
+        'name': "Database Assignment",
+        'services': [
+            {
+                'category': 'home-cleaning',
+                'title': 'Home Cleaning',
+                'subcategories': ['Daily Cleaning', 'Ironing']
+            },
+            {
+                'category': 'deep-cleaning',
+                'title': 'Deep Cleaning',
+                'subcategories': ['Floor and Carpet Cleaning', 'Bathroom and Tile Cleaning']
+            },
+            {
+                'category': 'air-conditioning',
+                'title': 'Air Conditioning Service',
+                'subcategories': ['Filter Replacement', 'Full AC Maintenance']
+            },
+            {
+                'category': 'massage',
+                'title': 'Massage',
+                'subcategories': ['Hot Stone Massage', 'Aromatherapy Massage']
+            },
+            {
+                'category': 'haircare',
+                'title': 'Haircare',
+                'subcategories': ['Haircut', 'Hair Coloring']
+            }
+        ]
     }
     return render(request, "main.html", context)
 
@@ -27,4 +53,3 @@ def subcategory_page(request):
     return render(request, 'subcategory_page.html', context)
 def status(request):
     return render(request,"status.html" )
-           
