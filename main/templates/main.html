@@ -1,14 +1,161 @@
 {% extends 'base.html' %}
+{% load static %}
+{% block meta %}
+<link rel="stylesheet" href="{% static 'css/authstyle.css' %}">
+{% endblock meta %}
+
 {% block content %}
 {% include 'navbar.html' %}
-<div class="mt-24">
 
-    <h5>Name:</h5>
-    <p>{{ name }}</p>
-
-
-
+<div class="relative bg-white overflow-hidden mt-10">
+    <div class="absolute top-0 left-0 transform -translate-x-1/2 -translate-y-1/2">
+        <img src="{% static 'image/Ellipse 2.png' %}" alt="Background Circle" class="w-[500px] h-[500px] opacity-50">
+    </div>
+    <div class="absolute top-1/4 right-0 transform translate-x-1/4">
+        <img src="{% static 'image/Rectangle 7.png' %}" alt="Yellow Gradient" class="w-[500px] h-[600px] opacity-80">
+    </div>
+    <div class="container mx-auto flex items-center justify-center relative z-10">
+        <div class="text-left md:text-left space-y-6 mt-10 md:mt-0 md:pl-12">
+            <h1 class="text-5xl md:text-6xl font-extrabold">
+                <span class="block text-black">your</span>
+                <span class="block text-yellow-500">one <span class="text-black">stop</span></span>
+            </h1>
+            <p class="text-lg text-gray-700 max-w-md">for all your cleaning service needs. From <span class="text-yellow-500">simple laundry</span> to <span class="text-yellow-500">deep cleaning</span>, it’s all available here.</p>
+            <div class="flex space-x-4 justify-center md:justify-start">
+                <a href="{% url 'authentication:temp_hero' %}" class="px-6 py-3 bg-yellow-500 text-white font-semibold rounded-md hover:bg-yellow-600 transition">Join us now!</a>
+            </div>
+        </div>
+        <div class="hidden md:block">
+            <img src="{% static 'image/pretty-brunette-woman-gray-uniform-taking-off-her-yellow-protective-gloves-while-smiling-looking-aside 1.png' %}" alt="Smiling Woman" class="w-[400px] h-auto">
+        </div>
+    </div>
 </div>
 
+<div class="container mx-auto mb-16 mt-10 text-center">
+    <!-- Section Title -->
+    <div class="mb-8">
+        <div class="inline-block">
+            <div class="w-12 h-2 bg-yellow-200 mx-auto mb-2 rounded-full"></div>
+            <h2 class="text-3xl font-semibold">Our Services</h2>
+        </div>
+    </div>
+
+    <!-- Search Filter -->
+    <div class="flex justify-center mb-8">
+        <input type="text" id="search-input" placeholder="Search for services..." class="p-2 border rounded-md w-1/2">
+        <select id="category-select" class="ml-4 p-2 border rounded-md">
+            <option value="">All Categories</option>
+            <option value="home-cleaning">Home Cleaning</option>
+            <option value="deep-cleaning">Deep Cleaning</option>
+            <option value="air-conditioning">Air Conditioning Service</option>
+            <option value="massage">Massage</option>
+            <option value="haircare">Haircare</option>
+        </select>
+    </div>
+
+    <!-- Services Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Home Cleaning Category -->
+        <div class="bg-white rounded-lg shadow-lg p-6" data-category="home-cleaning">
+            <h2 class="text-2xl font-semibold mb-4">Home Cleaning</h2>
+            <div class="space-y-2">
+                <a href="{% url 'main:subcategory' %}" class="subcategory-item block p-2 bg-yellow-200 rounded no-underline text-inherit hover:bg-yellow-300">
+                    Daily Cleaning
+                </a>
+                <a href="{% url 'main:subcategory' %}" class="subcategory-item block p-2 bg-yellow-200 rounded no-underline text-inherit hover:bg-yellow-300">
+                    Ironing
+                </a>
+            </div>
+        </div>
+
+        <!-- Deep Cleaning Category -->
+        <div class="bg-white rounded-lg shadow-lg p-6" data-category="deep-cleaning">
+            <h2 class="text-2xl font-semibold mb-4">Deep Cleaning</h2>
+            <div class="space-y-2">
+                <a href="{% url 'main:subcategory' %}" class="subcategory-item block p-2 bg-yellow-200 rounded hover:bg-yellow-300">
+                    Floor and Carpet Cleaning
+                </a>
+                <a href="{% url 'main:subcategory' %}" class="subcategory-item block p-2 bg-yellow-200 rounded hover:bg-yellow-300">
+                    Bathroom and Tile Cleaning
+                </a>
+            </div>
+        </div>
+
+        <!-- Air Conditioning Service Category -->
+        <div class="bg-white rounded-lg shadow-lg p-6" data-category="air-conditioning">
+            <h2 class="text-2xl font-semibold mb-4">Air Conditioning Service</h2>
+            <div class="space-y-2">
+                <a href="{% url 'main:subcategory' %}" class="subcategory-item block p-2 bg-yellow-200 rounded hover:bg-yellow-300">
+                    Filter Replacement
+                </a>
+                <a href="{% url 'main:subcategory' %}" class="subcategory-item block p-2 bg-yellow-200 rounded hover:bg-yellow-300">
+                    Full AC Maintenance
+                </a>
+            </div>
+        </div>
+
+        <!-- Massage Category -->
+        <div class="bg-white rounded-lg shadow-lg p-6" data-category="massage">
+            <h2 class="text-2xl font-semibold mb-4">Massage</h2>
+            <div class="space-y-2">
+                <a href="{% url 'main:subcategory' %}" class="subcategory-item block p-2 bg-yellow-200 rounded hover:bg-yellow-300">
+                    Hot Stone Massage
+                </a>
+                <a href="{% url 'main:subcategory' %}" class="subcategory-item block p-2 bg-yellow-200 rounded hover:bg-yellow-300">
+                    Aromatherapy Massage
+                </a>
+            </div>
+        </div>
+
+        <!-- Haircare Category -->
+        <div class="bg-white rounded-lg shadow-lg p-6 border-2 border-blue-500" data-category="haircare">
+            <h2 class="text-2xl font-semibold mb-4">Haircare</h2>
+            <div class="space-y-2">
+                <a href="{% url 'main:subcategory' %}" class="subcategory-item block p-2 bg-yellow-200 rounded hover:bg-yellow-300">
+                    Haircut
+                </a>
+                <a href="{% url 'main:subcategory' %}" class="subcategory-item block p-2 bg-yellow-200 rounded hover:bg-yellow-300">
+                    Hair Coloring
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% include 'footer.html' %}
+
+<script>
+    // Search and category filter functionality
+    const searchInput = document.getElementById('search-input');
+    const categorySelect = document.getElementById('category-select');
+
+    function filterItems() {
+        const searchQuery = searchInput.value.toLowerCase();
+        const selectedCategory = categorySelect.value;
+
+        document.querySelectorAll('.subcategory-item').forEach(item => {
+            const text = item.textContent.toLowerCase();
+            const category = item.closest('[data-category]').getAttribute('data-category');
+
+            // Check if item matches both the search query and the selected category (if any)
+            const matchesSearch = text.includes(searchQuery);
+            const matchesCategory = !selectedCategory || category === selectedCategory;
+
+            // Show item only if it matches both criteria
+            item.style.display = matchesSearch && matchesCategory ? 'block' : 'none';
+        });
+
+        // Hide entire categories if no subcategory matches
+        document.querySelectorAll('[data-category]').forEach(category => {
+            const visibleItems = category.querySelectorAll('.subcategory-item[style*="display: block"]').length;
+            category.style.display = visibleItems > 0 ? 'block' : 'none';
+        });
+    }
+
+    // Attach event listeners to input and select
+    searchInput.addEventListener('input', filterItems);
+    categorySelect.addEventListener('change', filterItems);
+</script>
 
 {% endblock content %}
+
