@@ -1,0 +1,17 @@
+<div class="bg-gray-50 p-4 rounded-md shadow-md mb-4" data-order-id="{{ order.id }}">
+    <div class="flex justify-between items-center">
+      <div class="w-1/5 text-center">
+        <p class="text-gray-600 font-semibold">Order ID</p>
+        <p>{{ order.id }}</p>
+      </div>
+      <div class="w-1/5 text-center">
+        <p class="text-gray-600 font-semibold">Status</p>
+        <p class="status-text">{{ order.status }}</p>
+      </div>
+      <div class="w-1/5 text-center">
+        <button onclick="openModal('{{ order.id }}')" class="px-4 py-2 bg-black text-white font-semibold rounded-md shadow hover:bg-black-600">
+          Update Status
+        </button>
+      </div>
+    </div>
+  </div>

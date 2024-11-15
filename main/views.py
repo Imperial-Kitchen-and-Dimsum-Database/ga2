@@ -51,5 +51,50 @@ def subcategory_page(request):
         ]
     }
     return render(request, 'subcategory_page.html', context)
+
 def status(request):
     return render(request,"status.html" )
+
+def worker_status(request):
+    context = {
+        'categories': [
+            {'id': 1, 'name': 'Home Cleaning'},
+            {'id': 2, 'name': 'Deep Cleaning'},
+            {'id': 3, 'name': 'Air Conditioning'},
+        ],
+        'subcategories': [
+            {'id': 1, 'category_id': 1, 'name': 'Daily Cleaning'},
+            {'id': 2, 'category_id': 1, 'name': 'Ironing'},
+            {'id': 3, 'category_id': 2, 'name': 'Floor Cleaning'},
+        ],
+        'orders': [
+            {
+                'id': '001',
+                'category': 'Home Cleaning',
+                'subcategory': 'Daily Cleaning',
+                'customer': 'John Smith',
+                'address': '123 Main St',
+                'scheduled_time': '2024-01-20 14:00',
+                'status': 'Pending'
+            },
+            {
+                'id': '002', 
+                'category': 'Deep Cleaning',
+                'subcategory': 'Floor Cleaning',
+                'customer': 'Jane Doe',
+                'address': '456 Oak Ave',
+                'scheduled_time': '2024-01-21 10:00',
+                'status': 'Accepted'
+            }
+        ],
+        'status_options': [
+            'Pending',
+            'Accepted',
+            'Arrived at Location',
+            'Providing Service', 
+            'Service Completed',
+            'Completed',
+            'Cancelled'
+        ]
+    }
+    return render(request, 'worker_status.html', context)

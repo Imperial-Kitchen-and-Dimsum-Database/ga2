@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+{% load static %}   
+{% block content %}
+{% include 'navbar.html' %}
+
+<div class="container mx-auto px-4 mt-24">
+    <h1 class="text-3xl font-bold mb-8">Worker Dashboard</h1>
+
+    <!-- Filters and Search -->
+    <div class="grid grid-cols-4 gap-4 mb-6">
+        <select id="category-filter" class="border rounded-lg p-2">
+            <option value="">All Categories</option>
+            {% for category in categories %}
+                <option value="{{ category.id }}">{{ category.name }}</option>
+            {% endfor %}
+        </select>
+
+        <select id="subcategory-filter" class="border rounded-lg p-2">
+            <option value="">All Subcategories</option>
+            {% for subcategory in subcategories %}
+                <option value="{{ subcategory.id }}" data-category="{{ subcategory.category_id }}">{{ subcategory.name }}</option>
+            {% endfor %}
+        </select>
+
+        <input type="text" id="search" class="border rounded-lg p-2" placeholder="Search for service orders...">
+    </div>
+
+    <!-- Orders List -->
+    <div class="space-y-4" id="order-container">
+        {% for order in orders %}
+            {% include 'worker_status_card.html' with order=order %}
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Add Modal Component -->
+<div id="statusModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center">
+    <div class="bg-white p-8 rounded-lg shadow-xl">
+        <h2 class="text-xl font-bold mb-4">Update Order Status</h2>
+        <input type="hidden" id="modalOrderId">
+        <select id="modalStatusSelect" class="w-full p-2 border rounded mb-4">
+            <option value="Pending">Pending</option>
+            <option value="In Progress">In Progress</option>
+            <option value="Completed">Completed</option>
+            <option value="Cancelled">Cancelled</option>
+        </select>
+        <div class="flex justify-end space-x-2">
+            <button onclick="closeModal()" class="px-4 py-2 bg-gray-200 rounded">Cancel</button>
+            <button onclick="updateStatus()" class="px-4 py-2 bg-black text-white rounded">Update</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Filter functionality
+    const categoryFilter = document.getElementById('category-filter');
+    const subcategoryFilter = document.getElementById('subcategory-filter');
+    const searchInput = document.getElementById('search');
+    const orderContainer = document.getElementById('order-container');
+
+    function filterOrders() {
+        const category = categoryFilter.value;
+        const subcategory = subcategoryFilter.value;
+        const searchText = searchInput.value.toLowerCase();
+
+        document.querySelectorAll('.order-card').forEach(card => {
+            const matchesCategory = !category || card.dataset.category === category;
+            const matchesSubcategory = !subcategory || card.dataset.subcategory === subcategory;
+            const matchesSearch = card.textContent.toLowerCase().includes(searchText);
+
+            card.style.display = matchesCategory && matchesSubcategory && matchesSearch ? 'block' : 'none';
+        });
+    }
+
+    // Search functionality
+    searchInput.addEventListener('input', function () {
+        const query = searchInput.value;
+        fetch(`/search_orders/?q=${query}`)
+            .then(response => response.json())
+            .then(data => {
+                orderContainer.innerHTML = '';
+                data.orders.forEach(order => {
+                    const orderCard = `
+                        <div class="bg-gray-50 p-4 rounded-md shadow-md mb-4">
+                            <div class="flex justify-between items-center">
+                                <div class="w-1/5 text-center">
+                                    <p class="text-gray-600 font-semibold">Order ID</p>
+                                    <p>${order.id}</p>
+                                </div>
+                                <div class="w-1/5 text-center">
+                                    <p class="text-gray-600 font-semibold">Status</p>
+                                    <p>${order.status}</p>
+                                </div>
+                                <div class="w-1/5 text-center">
+                                    <button onclick="openModal('${order.id}')" class="px-4 py-2 bg-black text-white font-semibold rounded-md shadow hover:bg-black-600">
+                                        Update Status
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    orderContainer.innerHTML += orderCard;
+                });
+            });
+    });
+
+    // Status update handler
+    document.querySelectorAll('.status-update').forEach(select => {
+        select.addEventListener('change', function() {
+            const orderId = this.dataset.orderId;
+            const newStatus = this.value;
+            // Here you would typically make an API call to update the status
+            console.log(`Updating order ${orderId} status to ${newStatus}`);
+            // Update the status badge
+            const statusBadge = this.previousElementSibling;
+            statusBadge.textContent = newStatus;
+            // Update badge colors
+            statusBadge.className = `inline-block px-3 py-1 rounded-full text-sm ${
+                newStatus === 'Completed' ? 'bg-green-100 text-green-800' :
+                newStatus === 'Cancelled' ? 'bg-red-100 text-red-800' :
+                newStatus === 'Pending' ? 'bg-yellow-100 text-yellow-800' :
+                'bg-blue-100 text-blue-800'
+            }`;
+        });
+    });
+
+    // Add event listeners
+    categoryFilter.addEventListener('change', filterOrders);
+    subcategoryFilter.addEventListener('change', filterOrders);
+    searchInput.addEventListener('input', filterOrders);
+
+    // Add Modal Functions
+    function openModal(orderId) {
+        const modal = document.getElementById('statusModal');
+        const modalOrderId = document.getElementById('modalOrderId');
+        modalOrderId.value = orderId;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    }
+
+    function closeModal() {
+        const modal = document.getElementById('statusModal');
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+    }
+
+    function updateStatus() {
+        const orderId = document.getElementById('modalOrderId').value;
+        const newStatus = document.getElementById('modalStatusSelect').value;
+        
+        // Make API call to update status
+        fetch('/update_order_status/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                order_id: orderId,
+                status: newStatus
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update the status in the UI
+                const orderCard = document.querySelector(`[data-order-id="${orderId}"]`);
+                if (orderCard) {
+                    const statusElement = orderCard.querySelector('.status-text');
+                    if (statusElement) statusElement.textContent = newStatus;
+                }
+                closeModal();
+            }
+        });
+    }
+
+    // CSRF Token helper function
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+
+{% endblock content %}
