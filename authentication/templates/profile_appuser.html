@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block meta %}
+<title>Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
+{% endblock meta %}
+
+{% block content %}
+{% include 'navbar.html' %}
+<div class="flex flex-col lg:flex-row gap-8 my-4 mx-12 lg:mx-32 main-container pt-20 justify-center" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+  <!-- Left side -->
+  <div id="profileLeft" class="bg-white shadow-lg rounded-lg p-10 w-full lg:w-1/3 flex flex-col justify-start max-h-[540px] overflow-y-auto relative">
+    <div style="background: linear-gradient(90deg, #FFF196 0%, #FFB74C 50%, #FFA5A5 100%);" class="absolute top-0 left-0 h-1/5 w-full z-0"></div>
+    <div class="flex items-center space-x-4">
+      <img
+        src="{% static 'image/default_avatar.png' %}"
+        alt="Profile Picture"
+        class="w-24 h-24 bg-white rounded-full z-10"
+      />
+    </div>
+    <div class="mt-4">
+      <h3 class="text-lg text-gray-900 font-extrabold">Details</h3>
+      <hr class="border-t-1 border-gray-300 mt-2" />
+      <ul class="text-sm mt-2 text-gray-900 space-y-2">
+        <li><strong>Name:</strong> {{ user.name }} Flori</li>
+        <li><strong>Level:</strong> {{ user.level }} 3</li>
+        <li><strong>Sex:</strong> {{ user.sex }} F </li>
+        <li><strong>Phone:</strong> {{ user.phone }} </li>
+        <hr class="border-t-1 border-gray-300 my-6" />
+        <li><strong>Birth Date:</strong> {{ user.birth_date }} 06/10/2005</li>
+        <li><strong>Address:</strong> {{ user.address }} 970 Park Pl San Mateo, California 94403 US</li>
+        <li><strong>MyPay Balance:</strong> ${{ user.pay_balance }}8989</li>
+      </ul>
+      <button 
+        id="updateButton"
+        class="mt-4 bg-gray-800 text-white text-sm font-bold py-2 px-4 rounded-md hover:bg-gray-900"
+        onclick="toggleProfileForm()">
+        Update
+      </button>
+    </div>
+  </div>
+
+  <!-- Right side -->
+  <div id="profileForm" class="bg-white shadow-md rounded-lg p-6 w-full lg:w-2/3 hidden">
+    <h3 class="text-xl font-semibold mb-4">Edit Profile</h3>
+    <form method="POST" action="">
+      {% csrf_token %}
+      
+      <div class="mb-4">
+        <label for="name" class="block text-sm font-medium text-gray-700">
+          Name
+        </label>
+        <input
+          type="text"
+          id="name"
+          name="name"
+          value="{{ user.name }}"
+          class="rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none sm:text-sm"
+        />
+      </div>
+      <div class="mb-4">
+        <label for="password" class="block text-sm font-medium text-gray-700">
+          Password
+        </label>
+        <input
+          type="password"
+          id="password"
+          name="password"
+          class="rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none sm:text-sm"
+        />
+      </div>
+      <div class="mb-4">
+        <label for="sex" class="block text-sm font-medium text-gray-700">
+          Sex
+        </label>
+        <select
+          id="sex"
+          name="sex"
+          class="rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none sm:text-sm"
+        >
+          <option value="Male" {% if user.sex == "Male" %}selected{% endif %}>Male</option>
+          <option value="Female" {% if user.sex == "Female" %}selected{% endif %}>Female</option>
+        </select>
+      </div>
+      <div class="mb-4">
+        <label for="phone" class="block text-sm font-medium text-gray-700">
+          Phone
+        </label>
+        <input
+          type="text"
+          id="phone"
+          name="phone"
+          value="{{ user.phone }}"
+          class="rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none sm:text-sm"
+        />
+      </div>
+      <div class="mb-4">
+        <label for="birth_date" class="block text-sm font-medium text-gray-700">
+          Birth Date
+        </label>
+        <input
+          type="date"
+          id="birth_date"
+          name="birth_date"
+          value="{{ user.birth_date }}"
+          class="rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none sm:text-sm"
+        />
+      </div>
+      <div class="mb-4">
+        <label for="address" class="block text-sm font-medium text-gray-700">
+          Address
+        </label>
+        <textarea
+          id="address"
+          name="address"
+          class="rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none sm:text-sm"
+        >{{ user.address }}</textarea>
+      </div>
+
+      <button
+        type="submit"
+        class="mt-4 bg-orange-500 text-white py-2 px-4 rounded-md hover:bg-orange-600 focus:ring-2 focus:ring-offset-2 focus:ring-orange-500"
+      >
+        Save Changes
+      </button>
+    </form>
+  </div>
+</div>
+
+<script>
+  function toggleProfileForm() {
+    const form = document.getElementById('profileForm');
+    const updateButton = document.getElementById('updateButton');
+    form.classList.toggle('hidden');
+    updateButton.style.display = 'none';
+  }
+</script>
+{% endblock content %}

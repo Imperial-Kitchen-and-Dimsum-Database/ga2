@@ -166,3 +166,67 @@ main p {
       transform: translatey(0px);
     }
   }
+
+/* Background image positioning and effect */
+.background-img {
+  position: absolute;
+  z-index: -1; /* Ensures the images stay in the background */
+  object-fit: cover;
+  transition: all 0.5s ease-in-out; /* Smooth transition for effects */
+}
+
+.img1 {
+  top: 10%;
+  left: 5%;
+  width: 15%;
+  filter: blur(3px); /* Applying blur */
+  transform: rotate(-15deg);
+}
+
+.img2 {
+  top: 30%;
+  right: 10%;
+  width: 12%;
+  filter: blur(5px); /* More blur */
+  transform: rotate(30deg);
+}
+
+.img3 {
+  top: 50%;
+  left: 20%;
+  width: 18%;
+  filter: blur(2px);
+  transform: rotate(-25deg);
+}
+
+.img4 {
+  top: 70%;
+  right: 5%;
+  width: 20%;
+  filter: blur(4px); /* Medium blur */
+  transform: rotate(10deg);
+}
+
+.min-h-screen {
+  background: linear-gradient(180deg, #FFF196 0%, #FFB74C 50%, #FFA5A5 100%);
+  position: relative;
+  overflow: hidden; /* Prevents overflow of images */
+}
+
+.autoFloat {
+  position: absolute;
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Animation to float images */
+@keyframes float {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}

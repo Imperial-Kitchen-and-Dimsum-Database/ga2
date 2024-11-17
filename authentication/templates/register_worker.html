@@ -8,72 +8,55 @@
 {% endblock meta %}
 
 {% block content %}
-<div class="min-h-screen flex items-center justify-center w-screen bg-gray-100">
-  <div class="max-w-md w-full bg-white py-6 px-10 rounded-2xl shadow-lg">
-    <h3 class="mt-2 text-center text-black text-2xl font-extrabold">Worker Registration</h3>
+<div style="background: linear-gradient(180deg, #FFF196 0%, #FFB74C 50%, #FFA5A5 100%);" class="min-h-screen flex items-center justify-center w-screen login-gradient">
+  <div class="max-w-md w-full bg-white py-6 px-10  my-10  rounded-2xl shadow-lg relative">
+    <a href="{% url 'authentication:choose_role' %}" class="back-arrow-btn absolute top-5 left-5 text-gray-500 hover:text-gray-700">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 rounded-full" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+    </a>
 
-    <!-- Display messages -->
-    {% if messages %}
-    <div class="mb-4">
-      {% for message in messages %}
-        <div class="bg-green-100 text-green-700 border border-green-400 p-3 rounded mb-2">
-          <span>{{ message }}</span>
-        </div>
-      {% endfor %}
-    </div>
-    {% endif %}
+    <h3 class="mt-2 text-center text-black text-2xl font-extrabold">Worker Registration</h3>
 
     <form class="mt-8 space-y-6" method="POST" action="{% url 'authentication:register_worker' %}">
       {% csrf_token %}
 
       <div class="space-y-4">
-        <!-- Name Field -->
+        <!-- y'all the only things being actually saved into the db is phone n password-->
+      <div class="space-y-4">
         <div>
-          <label for="name" class="block text-sm font-medium text-gray-700">Name</label>
-          <input id="name" name="name" type="text" required class="w-full border-gray-300 rounded-md" placeholder="Full Name">
+          <input id="name" name="name" type="text" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none sm:text-sm" placeholder="Name">
         </div>
 
-        <!-- Phone Number -->
         <div>
-          <label for="phone" class="block text-sm font-medium text-gray-700">Phone Number</label>
-          <input id="phone" name="phone" type="text" required class="w-full border-gray-300 rounded-md" placeholder="Phone Number">
+          <input id="phone" name="phone" type="text" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none sm:text-sm" placeholder="Phone Number">
         </div>
 
-        <!-- Sex (Gender) -->
-        <div class="flex items-center space-x-4 mt-4">
-          <label for="sex" class="block text-sm font-medium text-gray-700">Sex</label>
+        <div class="flex items-center justify-left mt-4 space-x-4">
           <div>
             <input id="sex_female" name="sex" type="radio" value="F" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
-            <label for="sex_female" class="ml-2 text-sm text-gray-700">F</label>
+            <label for="sex_female" class="ml-2 text-sm text-gray-700">Female</label>
           </div>
           <div>
             <input id="sex_male" name="sex" type="radio" value="M" class="h-4 w-4 text-indigo-600 border-gray-300 focus:ring-indigo-500">
-            <label for="sex_male" class="ml-2 text-sm text-gray-700">M</label>
+            <label for="sex_male" class="ml-2 text-sm text-gray-700">Male</label>
           </div>
         </div>
 
-        <!-- Password -->
         <div>
-          <label for="password" class="block text-sm font-medium text-gray-700">Password</label>
-          <input id="password" name="password" type="password" required class="w-full border-gray-300 rounded-md" placeholder="Password">
-        </div>
-
-        <!-- Additional Fields -->
-        <div>
-          <label for="birthdate" class="block text-sm font-medium text-gray-700">Birthdate</label>
-          <input id="birthdate" name="birthdate" type="date" required class="w-full border-gray-300 rounded-md">
+          <input id="password" name="password" type="password" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none sm:text-sm" placeholder="Password">
         </div>
 
         <div>
-          <label for="address" class="block text-sm font-medium text-gray-700">Address</label>
-          <input id="address" name="address" type="text" required class="w-full border-gray-300 rounded-md" placeholder="Address">
+          <input id="birthdate" name="birthdate" type="date" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none sm:text-sm">
         </div>
 
-        <!-- Bank Name (Dropdown) -->
         <div>
-          <label for="bank_name" class="block text-sm font-medium text-gray-700">Bank Name</label>
-          <select id="bank_name" name="bank_name" required class="w-full border-gray-300 rounded-md">
-            <option value="">Select Bank</option>
+          <input id="address" name="address" type="text" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none sm:text-sm" placeholder="Address">
+        </div>
+
+        <div>
+          <select id="bank_name" name="bank_name" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none sm:text-sm">
             <option value="GoPay">GoPay</option>
             <option value="OVO">OVO</option>
             <option value="Virtual Account BCA">Virtual Account BCA</option>
@@ -83,24 +66,25 @@
         </div>
 
         <div>
-          <label for="account_number" class="block text-sm font-medium text-gray-700">Account Number</label>
-          <input id="account_number" name="account_number" type="text" required class="w-full border-gray-300 rounded-md" placeholder="Account Number">
+          <input id="account_number" name="account_number" type="text" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none sm:text-sm" placeholder="Account Number">
         </div>
 
         <div>
-          <label for="npwp" class="block text-sm font-medium text-gray-700">NPWP</label>
-          <input id="npwp" name="npwp" type="text" required class="w-full border-gray-300 rounded-md" placeholder="NPWP">
+          <input id="npwp" name="npwp" type="text" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none sm:text-sm" placeholder="NPWP">
         </div>
 
         <div>
-          <label for="image_url" class="block text-sm font-medium text-gray-700">Image URL</label>
-          <input id="image_url" name="image_url" type="url" required class="w-full border-gray-300 rounded-md" placeholder="Image URL">
+          <input id="image_url" name="image_url" type="url" required class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none sm:text-sm" placeholder="Image URL">
         </div>
       </div>
-
       <div class="mt-6">
-        <button type="submit" class="w-full py-2 px-4 bg-indigo-600 text-white rounded-md">Register</button>
+        <button type="submit" class="w-full py-2 px-4 bg-neutral-800 hover:bg-black text-white my-2 rounded-md">Register</button>
       </div>
+      <p class="mt-4 text-center text-sm text-gray-600">
+        Already have an account?
+        <a href="{% url 'authentication:login' %}" class="font-medium text-orange-500 hover:text-orange-400 hover:underline">Login</a>
+      </p> 
+
     </form>
   </div>
 </div>

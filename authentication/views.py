@@ -85,3 +85,10 @@ def register_appuser(request):
             messages.error(request, 'All fields must be filled')
 
     return render(request, 'register_appuser.html')
+
+def profile(request):
+    role = request.user.user_type
+    if role == "worker":
+        return render(request, "profile_worker.html")
+    elif role == "appuser":
+        return render(request, "profile_appuser.html")
