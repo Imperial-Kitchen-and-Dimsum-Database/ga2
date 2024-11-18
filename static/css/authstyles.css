@@ -1,232 +1,168 @@
 html, body{
-    scroll-behavior: smooth;
+  scroll-behavior: smooth;
 }
 
 main {
-    margin: 0;
-    padding: 20px;
-    background: linear-gradient(180deg, #FFF196 0%, #FFB74C 33%, #FFA5A5 66%, #7061C7 100%);  
+  margin: 0;
+  padding: 20px;
+  background: linear-gradient(180deg, #FFF196 0%, #FFB74C 33%, #FFA5A5 66%, #7061C7 100%);  
 }
 
 
 body {
-    font-family: 'Plus Jakarta Sans';
-    box-sizing: border-box;
-    text-align: center;
+  font-family: 'Plus Jakarta Sans';
+  box-sizing: border-box;
+  text-align: center;
 }
 
 header.section {
-    margin-top: 15vh;  /* Start the first section at 1/3 of the screen height */
+  margin-top: 15vh;  /* Start the first section at 1/3 of the screen height */
 }
 
 main h2 {
-    font-size: 4em;
-    line-height: 1; 
-    margin-bottom: 20px;
-    font-weight: 600;
+  font-size: 4em;
+  line-height: 1; 
+  margin-bottom: 20px;
+  font-weight: 600;
 }
 
 h2 .bold { 
-    font-weight: 800;
+  font-weight: 800;
 }
 h1 {
-    font-size: 5em;
-    line-height: 1; 
-    margin-bottom: 20px;
-    font-weight: 800;
+  font-size: 5em;
+  line-height: 1; 
+  margin-bottom: 20px;
+  font-weight: 800;
 }
 
 main p {
-    font-size: 1.2em;
-    color: #333;
+  font-size: 1.2em;
+  color: #333;
 }
 
 .section img {
-    width: 100%;
-    max-width: 400px;  
-    height: auto;
-    object-fit: cover; 
+  width: 100%;
+  max-width: 400px;  
+  height: auto;
+  object-fit: cover; 
 }
 
 .team {
-    display: flex;
-    justify-content: center;
-    gap: 20px; 
-    align-items: center;
-    margin-top: 2rem;  
+  display: flex;
+  justify-content: center;
+  gap: 20px; 
+  align-items: center;
+  margin-top: 2rem;  
 }
 
 .team img {
-    width: 150px; 
-    height: auto;
+  width: 150px; 
+  height: auto;
 }
 
 .section {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;  
-    padding: 2rem;
-    text-align: left;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;  
+  padding: 2rem;
+  text-align: left;
 }
 
 .section .text {
-    max-width: 500px; 
+  max-width: 500px; 
 }
 
 .image-container {
-    gap: 20px;  
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 2rem; /* Add padding around the image */
-    border-radius: 10px; /* Optional: adds rounded corners to the block */
+  gap: 20px;  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem; /* Add padding around the image */
+  border-radius: 10px; /* Optional: adds rounded corners to the block */
 }
 
 .image-container img {
-    width: 75%; /* This makes the image responsive and fill the container */
-    height: auto; /* Maintain aspect ratio of the image */
+  width: 75%; /* This makes the image responsive and fill the container */
+  height: auto; /* Maintain aspect ratio of the image */
 }
 
 .get-started {
-    margin: 2rem 0;
+  margin: 2rem 0;
 }
 
 .get-started p a {
-    font-size: 5em;
-    font-weight: 600;
-    text-decoration: none;
-    color: #ffffff;
+  font-size: 5em;
+  font-weight: 600;
+  text-decoration: none;
+  color: #ffffff;
 }
 
 .get-started p a:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 /* ANIMATIONS */
 .autoRotate {
-    animation: autoRotateAnimation;
-    animation-timeline: view();
+  animation: autoRotateAnimation;
+  animation-timeline: view();
 }
 
 @keyframes autoRotateAnimation {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+  from {
+      transform: rotate(0deg);
+  }
+  to {
+      transform: rotate(360deg);
+  }
 }
 
 .autoShow {
-    animation: autoShowAnimation both;
-    animation-timeline: view(70% 5%);
+  animation: autoShowAnimation both;
+  animation-timeline: view(70% 5%);
 }
 
 @keyframes autoShowAnimation {
-    from {
-        opacity: 0;
-        transform: translateY(200px) scale(0.3);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+  from {
+      opacity: 0;
+      transform: translateY(200px) scale(0.3);
+  }
+  to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+  }
 }
 
 .autoBLur {
-    animation: autoBLurAnimation linear both;
-    animation-timeline: view();
+  animation: autoBLurAnimation linear both;
+  animation-timeline: view();
 }
 
 @keyframes autoBLurAnimation {
-    0% {
-        filter: blur(40px);
-    }
-    45%, 55% {
-        filter: blur(0px);
-    }
-    100% {
-        filter: blur(40px);
-    }
-}
-
-.autoFloat {
-    animation: float 3s ease-in-out infinite;
-  }
-
-@keyframes float {
-    0% {
-      transform: translatey(0px);
-    }
-    50% {
-      transform: translatey(-20px);
-    }
-    100% {
-      transform: translatey(0px);
-    }
-  }
-
-/* Background image positioning and effect */
-.background-img {
-  position: absolute;
-  z-index: -1; /* Ensures the images stay in the background */
-  object-fit: cover;
-  transition: all 0.5s ease-in-out; /* Smooth transition for effects */
-}
-
-.img1 {
-  top: 10%;
-  left: 5%;
-  width: 15%;
-  filter: blur(3px); /* Applying blur */
-  transform: rotate(-15deg);
-}
-
-.img2 {
-  top: 30%;
-  right: 10%;
-  width: 12%;
-  filter: blur(5px); /* More blur */
-  transform: rotate(30deg);
-}
-
-.img3 {
-  top: 50%;
-  left: 20%;
-  width: 18%;
-  filter: blur(2px);
-  transform: rotate(-25deg);
-}
-
-.img4 {
-  top: 70%;
-  right: 5%;
-  width: 20%;
-  filter: blur(4px); /* Medium blur */
-  transform: rotate(10deg);
-}
-
-.min-h-screen {
-  background: linear-gradient(180deg, #FFF196 0%, #FFB74C 50%, #FFA5A5 100%);
-  position: relative;
-  overflow: hidden; /* Prevents overflow of images */
-}
-
-.autoFloat {
-  position: absolute;
-  animation: float 6s ease-in-out infinite;
-}
-
-/* Animation to float images */
-@keyframes float {
   0% {
-    transform: translateY(0);
+      filter: blur(40px);
   }
-  50% {
-    transform: translateY(-20px);
+  45%, 55% {
+      filter: blur(0px);
   }
   100% {
-    transform: translateY(0);
+      filter: blur(40px);
+  }
+}
+
+.autoFloat {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% {
+    transform: translatey(0px);
+  }
+  50% {
+    transform: translatey(-20px);
+  }
+  100% {
+    transform: translatey(0px);
   }
 }

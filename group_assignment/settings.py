@@ -41,8 +41,6 @@ INSTALLED_APPS = [
     'authentication',
     'mypay_service',
     'testi_vouchers',
-    'service_booking',
-    'subcategory_services',
 ]
 
 MIDDLEWARE = [
