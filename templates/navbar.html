@@ -14,7 +14,7 @@
             <a href="{% url 'mypay_service:mypay_dashboard' %}" class="text-sm md:text-base text-black font-semibold hover:text-gray-600 transition">MyPay</a>
 
             {% if user.user_type == 'appuser' %}
-            <a href="{% url 'main:service' %}" class="text-sm md:text-base text-black font-semibold hover:text-gray-600 transition">My Order</a>
+            <a href="{% url 'main:user_service_bookings' %}" class="text-sm md:text-base text-black font-semibold hover:text-gray-600 transition">My Order</a>
             {% endif %}
 
             <a href="{% url 'testi_vouchers:vouchers' %}" class="text-sm md:text-base text-black font-semibold hover:text-gray-600 transition">Vouchers</a>
@@ -38,7 +38,7 @@
         <a href="{% url 'mypay_service:mypay_dashboard' %}" class="block text-black text-sm font-semibold hover:text-gray-600 transition">MyPay</a>
 
         {% if user.user_type == 'appuser' %}
-        <a href="{% url 'main:service' %}" class="block text-black text-sm font-semibold hover:text-gray-600 transition">My Order</a>
+        <a href="{% url 'main:user_service_bookings' %}" class="block text-black text-sm font-semibold hover:text-gray-600 transition">My Order</a>
         {% endif %}
 
         <a href="{% url 'testi_vouchers:vouchers' %}" class="block text-black text-sm font-semibold hover:text-gray-600 transition">Vouchers</a>

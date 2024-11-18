@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+{% load static %} 
+{% block meta %}
+<link rel="stylesheet" href="{% static 'css/global.css' %}">
+
+{% endblock meta %}
+{% block content %}
+{% include 'navbar.html' %}
+
+<!-- Header Image -->
+<img src="{% static 'image/status.png' %}" class="w-full" alt="Status Header">
+
+<div class="mt-16 mb-16">
+    <div class="w-3/4 bg-white shadow-lg rounded-lg p-8 space-y-6 mx-auto">
+        
+        <!-- Filters Section -->
+        <div class="bg-[#FBE0E1] p-4 rounded-lg shadow-md">
+            <form class="flex flex-wrap gap-4 items-center">
+                <div class="flex-1">
+                    <input 
+                        type="text" 
+                        id="search-input" 
+                        placeholder="Search by service name or order ID" 
+                        class="p-3 border border-[#F3ACAF] rounded-md w-full focus:ring-2 focus:ring-[#F3ACAF] focus:outline-none">
+                </div>
+
+                <div>
+                    <select 
+                        id="subcategory-select" 
+                        class="p-3 border border-[#F3ACAF] rounded-md focus:ring-2 focus:ring-[#F3ACAF] focus:outline-none">
+                        <option value="">All Subcategories</option>
+                        {% for subcategory in subcategories %}
+                        <option value="{{ subcategory }}">{{ subcategory }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <select 
+                        id="status-select" 
+                        class="p-3 border border-[#F3ACAF] rounded-md focus:ring-2 focus:ring-[#F3ACAF] focus:outline-none">
+                        <option value="">All Statuses</option>
+                        {% for status in status_options %}
+                        <option value="{{ status }}">{{ status }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+        </div>
+
+        <!-- Service Bookings -->
+        <div id="booking-container">
+            {% for order in orders %}
+            <div class="bg-white p-4 rounded-lg shadow-md mb-4 border-l-4 {% if order.order_status == 'Order Completed' %}border-[#F3ACAF]{% else %}border-gray-300{% endif %} booking-item" 
+                data-subcategory="{{ order.subcategory }}" 
+                data-status="{{ order.order_status }}" 
+                data-name="{{ order.service_name|lower }}" 
+                data-id="{{ order.order_id|lower }}">
+                <div class="flex justify-between items-center">
+                    <div class="w-1/6 text-center">
+                        <p class="text-gray-500 font-semibold">Order ID</p>
+                        <p class="text-gray-700">{{ order.order_id }}</p>
+                    </div>
+                    <div class="w-1/6 text-center">
+                        <p class="text-gray-500 font-semibold">Service Name</p>
+                        <p class="text-gray-700">{{ order.service_name }}</p>
+                    </div>
+                    <div class="w-1/6 text-center">
+                        <p class="text-gray-500 font-semibold">Price</p>
+                        <p class="text-gray-700">{{ order.total_payment }}</p>
+                    </div>
+                    <div class="w-1/6 text-center">
+                        <p class="text-gray-500 font-semibold">Order Date</p>
+                        <p class="text-gray-700">${{ order.order_date }}</p>
+                    </div>
+                    <div class="w-1/6 text-center">
+                        <p class="text-gray-500 font-semibold">Status</p>
+                        <p class="{% if order.order_status == 'Order Completed' %}text-[#F3ACAF]{% else %}text-gray-700{% endif %}">
+                            {{ order.order_status }}
+                        </p>
+                    </div>
+                    <div class="w-1/6 text-center flex flex-col items-center justify-center gap-2">
+                        {% if order.order_status == 'Order Completed' and not order.testimonial_created %}
+                        <button 
+                            onclick="openModal('{{ order.order_id }}')" 
+                            class="px-2 py-2 bg-[#F3ACAF] text-white font-semibold rounded-md shadow hover:bg-[#e9989b] hover:text-black min-w-[100px]">
+                            Create Testimonial
+                        </button>
+                        {% endif %}
+                        
+                        {% if order.order_status == 'Waiting for Payment' or order.order_status == 'Searching for Nearest Workers' %}
+                        <button 
+                            onclick="cancelOrder('{{ order.order_id }}')" 
+                            class="px-2 py-2 border-2 border-[#F3ACAF] text-[#F3ACAF] font-semibold rounded-md shadow hover:bg-[#FBE0E1] hover:text-[#e9989b] min-w-[100px]">
+                            Cancel Order
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-gray-500 text-center">You have no service bookings yet.</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% include 'footer.html' %}
+
+<!-- Testimonial Modal -->
+<div id="modal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex justify-center items-center hidden">
+    <div class="bg-white rounded-xl shadow-lg w-[400px]">
+        <!-- Modal Header -->
+        <div class="bg-[#F3ACAF] rounded-t-xl p-4 text-center">
+            <h2 class="text-lg font-bold text-white">Testimonial</h2>
+        </div>
+
+        <!-- Modal Content -->
+        <div class="p-6 space-y-4">
+            <!-- Rating Input -->
+            <div>
+                <label for="rating" class="block text-black font-semibold mb-2">Rating</label>
+                <input 
+                    type="number" 
+                    id="rating" 
+                    min="1" 
+                    max="10" 
+                    class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F3ACAF]"
+                    placeholder="Enter your rating (1-10)"
+                />
+            </div>
+
+            <!-- Comment Input -->
+            <div>
+                <label for="comment" class="block text-black font-semibold mb-2">Comment</label>
+                <textarea 
+                    id="comment" 
+                    rows="4" 
+                    class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F3ACAF]"
+                    placeholder="Write your comment here..."
+                ></textarea>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="flex justify-end p-4 space-x-4">
+            <button 
+                onclick="closeModal()" 
+                class="bg-gray-300 px-4 py-2 text-black font-semibold rounded-md hover:bg-gray-400">
+                Cancel
+            </button>
+            <button 
+                onclick="submitForm()" 
+                class="bg-[#F3ACAF] px-4 py-2 text-white font-semibold rounded-md hover:bg-[#e9989b]">
+                Submit
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+    const searchInput = document.getElementById('search-input');
+    const subcategorySelect = document.getElementById('subcategory-select');
+    const statusSelect = document.getElementById('status-select');
+    const bookingContainer = document.getElementById('booking-container');
+    const modal = document.getElementById('modal');
+
+    function filterBookings() {
+        const searchQuery = searchInput.value.toLowerCase();
+        const selectedSubcategory = subcategorySelect.value;
+        const selectedStatus = statusSelect.value;
+
+        document.querySelectorAll('.booking-item').forEach(item => {
+            const name = item.getAttribute('data-name');
+            const id = item.getAttribute('data-id');
+            const subcategory = item.getAttribute('data-subcategory');
+            const status = item.getAttribute('data-status');
+
+            const matchesSearch = !searchQuery || name.includes(searchQuery) || id.includes(searchQuery);
+            const matchesSubcategory = !selectedSubcategory || subcategory === selectedSubcategory;
+            const matchesStatus = !selectedStatus || status === selectedStatus;
+
+            item.style.display = matchesSearch && matchesSubcategory && matchesStatus ? 'block' : 'none';
+        });
+    }
+
+    function openModal(orderId) {
+        modal.classList.remove('hidden');
+    }
+
+    function closeModal() {
+        modal.classList.add('hidden');
+    }
+
+    function submitForm() {
+        const rating = document.getElementById('rating').value;
+        const comment = document.getElementById('comment').value;
+        if (rating && comment) {
+            alert(`Testimonial submitted! Rating: ${rating}, Comment: ${comment}`);
+            closeModal();
+        } else {
+            alert('Please fill in both fields!');
+        }
+    }
+
+    searchInput.addEventListener('input', filterBookings);
+    subcategorySelect.addEventListener('change', filterBookings);
+    statusSelect.addEventListener('change', filterBookings);
+</script>
+
+{% endblock content %}

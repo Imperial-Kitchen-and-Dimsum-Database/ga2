@@ -46,10 +46,10 @@ def subcategory_page(request):
             {'name': 'Premium Cleaning', 'duration': 6, 'price': 130},
         ],
         'workers': [
-            {'name': 'John Doe', 'experience': 5, 'image': '../static/image/person.png'},
-            {'name': 'Jane Smith', 'experience': 3, 'image': '../static/image/person.png'},
-            {'name': 'Mike Johnson', 'experience': 7, 'image': '../static/image/person.png'},
-            {'name': 'Sarah Williams', 'experience': 4, 'image': '../static/image/person.png'},
+            {'id': '1', 'name': 'John Doe', 'experience': 5, 'image': '../static/image/person.png'},
+            {'id': '2', 'name': 'Jane Smith', 'experience': 3, 'image': '../static/image/person.png'},
+            {'id': '3', 'name': 'Mike Johnson', 'experience': 7, 'image': '../static/image/person.png'},
+            {'id': '4', 'name': 'Sarah Williams', 'experience': 4, 'image': '../static/image/person.png'},
         ]
     }
     return render(request, 'subcategory_page.html', context)
@@ -100,3 +100,90 @@ def worker_status(request):
         ]
     }
     return render(request, 'worker_status.html', context)
+
+@login_required(login_url='/auth/hero/')
+@login_required(login_url='/auth/hero/')
+def user_service_bookings(request):
+    context = {
+        'orders': [
+            {
+                'order_id': '001',
+                'service_name': 'Home Cleaning - Basic Cleaning',
+                'order_status': 'Waiting for Payment',
+                'order_date': '2024-01-15',
+                'total_payment': 50,
+                'testimonial_created': False,
+                'subcategory': 'Home Cleaning',
+            },
+            {
+                'order_id': '002',
+                'service_name': 'Deep Cleaning - Premium Cleaning',
+                'order_status': 'Searching for Nearest Workers',
+                'order_date': '2024-01-10',
+                'total_payment': 130,
+                'testimonial_created': False,
+                'subcategory': 'Deep Cleaning',
+            },
+            {
+                'order_id': '003',
+                'service_name': 'Air Conditioning - Full AC Maintenance',
+                'order_status': 'Order Completed',
+                'order_date': '2024-01-08',
+                'total_payment': 200,
+                'testimonial_created': False,
+                'subcategory': 'Air Conditioning',
+            },
+        ],
+        'subcategories': ['Home Cleaning', 'Deep Cleaning', 'Air Conditioning'],
+        'status_options': ['Waiting for Payment', 'Searching for Nearest Workers', 'Order Completed'],
+    }
+    return render(request, 'user_service_bookings.html', context)
+
+
+def worker_profile(request, worker_id):
+    workers_data = {
+        1: {
+            'name': 'John Doe',
+            'rate': 9.5,
+            'finished_orders': 25,
+            'phone': '123-456-7890',
+            'birth_date': '1990-05-20',
+            'address': '123 Main St, Springfield',
+            'image': '/static/image/person.png',
+        },
+        2: {
+            'name': 'Jane Smith',
+            'rate': 8.7,
+            'finished_orders': 18,
+            'phone': '987-654-3210',
+            'birth_date': '1995-07-12',
+            'address': '456 Oak Ave, Gotham',
+            'image': '/static/image/person.png',
+        },
+        3: {
+            'name': 'Mike Johnson',
+            'rate': 9.2,
+            'finished_orders': 30,
+            'phone': '555-333-2222',
+            'birth_date': '1988-03-10',
+            'address': '789 Pine Rd, Metropolis',
+            'image': '/static/image/person.png',
+        },
+        4: {
+            'name': 'Sarah Williams',
+            'rate': 8.9,
+            'finished_orders': 20,
+            'phone': '444-666-1111',
+            'birth_date': '1992-08-15',
+            'address': '321 Elm St, Star City',
+            'image': '/static/image/person.png',
+        },
+    }
+
+    worker = workers_data.get(worker_id, None)
+
+    if worker:
+        context = {'worker': worker}
+        return render(request, 'worker_profile.html', context)
+    else:
+        return render(request, '404.html')

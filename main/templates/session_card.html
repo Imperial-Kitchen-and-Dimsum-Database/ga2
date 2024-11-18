@@ -15,47 +15,37 @@
                     <span class="font-medium">${{ session.price }}</span>
                 </p>
             </div>
-
-            <button class="session-toggle-btn bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 px-4 rounded-full mt-8 transition-colors" 
+            <!-- Book Service Button -->
+            <button 
+                class="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 px-4 rounded-full mt-8 transition-colors" 
+                data-bs-toggle="modal" 
+                data-bs-target="#bookServiceModal" 
                 data-session-name="{{ session.name }}"
                 data-session-price="{{ session.price }}"
-                data-session-duration="{{ session.duration }}"
-                data-selected="false">
-                Select
+                data-session-duration="{{ session.duration }}">
+                Book Service
             </button>
+
+            {% if user.is_authenticated and user.user_type == 'worker' %}
+            <button 
+                class="bg-[#FFB74C] hover:bg-[#e9989b] text-white font-semibold py-2 px-4 rounded-full mt-4 transition-colors">
+                Join
+            </button>
+            {% endif %}
         </div>
         <div class="w-64 h-32 bg-gray-200 rounded-lg flex-shrink-0"></div>
     </div>
 </div>
 
 <script>
-    document.querySelectorAll('.session-toggle-btn').forEach(button => {
-        button.addEventListener('click', function() {
-            const isSelected = this.getAttribute('data-selected') === 'true';
-            
-            // Deselect if already selected
-            if (isSelected) {
-                this.classList.remove('bg-black', 'text-white');
-                this.classList.add('bg-yellow-400', 'text-black');
-                this.textContent = 'Select';
-                this.setAttribute('data-selected', 'false');
-            } 
-            // Select if not selected
-            else {
-                // Deselect all other buttons first
-                document.querySelectorAll('.session-toggle-btn').forEach(btn => {
-                    btn.classList.remove('bg-black', 'text-white');
-                    btn.classList.add('bg-yellow-400', 'text-black');
-                    btn.textContent = 'Select';
-                    btn.setAttribute('data-selected', 'false');
-                });
-    
-                // Select this button
-                this.classList.remove('bg-yellow-400', 'text-black');
-                this.classList.add('bg-black', 'text-white');
-                this.textContent = 'Selected';
-                this.setAttribute('data-selected', 'true');
-            }
+    document.addEventListener('DOMContentLoaded', function () {
+        const bookServiceModal = document.getElementById('bookServiceModal');
+        const totalPaymentField = document.getElementById('totalPayment');
+
+        bookServiceModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget; 
+            const sessionPrice = button.getAttribute('data-session-price');
+            totalPaymentField.value = `$${sessionPrice}`; 
         });
     });
-    </script>
+</script>

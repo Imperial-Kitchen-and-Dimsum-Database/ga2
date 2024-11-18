@@ -1,8 +1,12 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block meta %}
-<link rel="stylesheet" href="{% static 'css/authstyle.css' %}">
 <link rel="stylesheet" href="{% static 'css/global.css' %}">
+<style>
+    body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+</style>
 {% endblock meta %}
 
 {% block content %}
@@ -76,7 +80,6 @@
 {% include 'footer.html' %}
 
 <script>
-    // Search and category filter functionality
     const searchInput = document.getElementById('search-input');
     const categorySelect = document.getElementById('category-select');
 
@@ -88,25 +91,22 @@
             const text = item.textContent.toLowerCase();
             const category = item.closest('[data-category]').getAttribute('data-category');
 
-            // Check if item matches both the search query and the selected category (if any)
             const matchesSearch = text.includes(searchQuery);
             const matchesCategory = !selectedCategory || category === selectedCategory;
 
-            // Show item only if it matches both criteria
             item.style.display = matchesSearch && matchesCategory ? 'block' : 'none';
         });
 
-        // Hide entire categories if no subcategory matches
         document.querySelectorAll('[data-category]').forEach(category => {
             const visibleItems = category.querySelectorAll('.subcategory-item[style*="display: block"]').length;
             category.style.display = visibleItems > 0 ? 'block' : 'none';
         });
     }
 
-    // Attach event listeners to input and select
     searchInput.addEventListener('input', filterItems);
     categorySelect.addEventListener('change', filterItems);
 </script>
 
 {% endblock content %}
+
 
