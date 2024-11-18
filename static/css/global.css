@@ -77,16 +77,6 @@
     }
   }
   
-body {
-  font-family: 'Plus Jakarta Sans', sans-serif;
-  background-color: #FFF;
-  color: #737373;
-  font-size: 15px;
-  line-height: 24px;
-}
-
-input, textarea, select, button {
-  font-family: inherit;
-  font-size: inherit;
-  color: inherit;
-}
+  body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
