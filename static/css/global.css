@@ -79,12 +79,10 @@
   
 body {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  background-color: #000000;
+  background-color: #FFF;
   color: #737373;
   font-size: 15px;
   line-height: 24px;
-  padding: 45px 0 20px; /* Optional for body padding */
-  margin: 0; /* Remove any default margin */
 }
 
 input, textarea, select, button {

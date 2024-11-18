@@ -61,43 +61,35 @@
 <div class="modal fade" id="bookServiceModal" tabindex="-1" aria-labelledby="bookServiceModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div style="font-family: 'Plus Jakarta Sans', sans-serif;" class="modal-content bg-gray-100 shadow-md rounded-lg text-gray-900">
-            <!-- Modal Header -->
             <div style="background: linear-gradient(90deg, #FFF196 0%, #FFB74C 50%, #FFA5A5 100%);" 
                 class="modal-header rounded-t-lg">
                 <h5 class="modal-title font-bold text-lg text-gray-900" id="bookServiceModalLabel">Book Service</h5>
                 <button type="button" class="btn-close bg-white rounded-full p-1 hover:bg-gray-200" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
 
-            <!-- Modal Body -->
             <div class="modal-body bg-white p-6 rounded-lg">
                 <form id="bookServiceForm" method="POST" action="{% url 'main:user_service_bookings' %}">
                     {% csrf_token %}
                     
-                    <!-- Service Name (hidden) -->
                     <input type="hidden" name="service_name" id="serviceName" value="">
                     
-                    <!-- Total Payment (hidden) -->
                     <input type="hidden" name="total_payment" id="totalPaymentHidden" value="">
 
-                    <!-- Order Date -->
                     <div class="mb-4">
                         <label for="orderDate" class="form-label font-medium text-gray-700">Order Date</label>
                         <input type="text" class="form-control border-yellow-400 rounded-md px-4 py-2 focus:ring-2 focus:ring-yellow-500 focus:outline-none" id="orderDate" name="order_date" readonly>
                     </div>
 
-                    <!-- Discount Code -->
                     <div class="mb-4">
                         <label for="discountCode" class="form-label font-medium text-gray-700">Discount Code</label>
                         <input type="text" class="form-control border-yellow-400 rounded-md px-4 py-2 focus:ring-2 focus:ring-yellow-500 focus:outline-none" id="discountCode" placeholder="Enter discount code (optional)">
                     </div>
 
-                    <!-- Total Payment -->
                     <div class="mb-4">
                         <label for="totalPayment" class="form-label font-medium text-gray-700">Total Payment</label>
                         <input type="text" class="form-control border-yellow-400 rounded-md px-4 py-2 focus:ring-2 focus:ring-yellow-500 focus:outline-none" id="totalPayment" readonly>
                     </div>
 
-                    <!-- Payment Method -->
                     <div class="mb-4">
                         <label for="paymentMethod" class="form-label font-medium text-gray-700">Payment Method</label>
                         <select class="form-select border-yellow-400 rounded-md px-4 py-2 focus:ring-2 focus:ring-yellow-500 focus:outline-none" id="paymentMethod">
@@ -126,27 +118,24 @@
         const totalPaymentField = document.getElementById('totalPayment');
         const totalPaymentHiddenField = document.getElementById('totalPaymentHidden');
         const serviceNameField = document.getElementById('serviceName');
-        const orderDateField = document.getElementById('orderDate'); // The Order Date field
+        const orderDateField = document.getElementById('orderDate'); 
 
-        // Event listener for showing the modal
         bookServiceModal.addEventListener('show.bs.modal', function (event) {
-            const button = event.relatedTarget; // Button that triggered the modal
+            const button = event.relatedTarget; 
             const sessionPrice = button.getAttribute('data-session-price');
             const sessionName = button.getAttribute('data-session-name');
 
-            // Populate the modal fields with dynamic values
             totalPaymentField.value = `$${sessionPrice}`;
             totalPaymentHiddenField.value = sessionPrice;
             serviceNameField.value = sessionName;
 
-            // Set today's date in the dd/mm/yyyy format
             const today = new Date();
             const yyyy = today.getFullYear();
-            const mm = String(today.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+            const mm = String(today.getMonth() + 1).padStart(2, '0'); 
             const dd = String(today.getDate()).padStart(2, '0');
             const formattedDate = `${dd}/${mm}/${yyyy}`;
 
-            orderDateField.value = formattedDate; // Update the Order Date field
+            orderDateField.value = formattedDate;
         });
     });
 
