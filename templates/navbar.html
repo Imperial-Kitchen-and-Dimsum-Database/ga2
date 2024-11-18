@@ -1,15 +1,29 @@
-<nav class="bg-white shadow-lg fixed top-4 left-1/2 transform -translate-x-1/2 z-40 w-3/4 rounded-md py-2 px-6">
-    <div class="max-w-7xl mx-auto flex items-center justify-between">
-        <h1 class="text-2xl font-bold text-black">Qlean</h1>
-        <div class="flex items-center space-x-8 ml-auto">
-            <a href="{% url 'main:show_main' %}" class="text-black font-semibold hover:text-gray-600 transition">Home</a>
-            <a href="{% url 'mypay_service:mypay_dashboard' %}" class="text-black font-semibold hover:text-gray-600 transition">MyPay</a>
-            <a href="{% url 'main:service' %}" class="text-black font-semibold hover:text-gray-600 transition">Services</a>
-            <a href="{% url 'testi_vouchers:vouchers' %}" class="text-black font-semibold hover:text-gray-600 transition">Vouchers</a>
-            <a href="{% url 'authentication:profile' %}" class="text-black font-semibold hover:text-gray-600 transition">Profile</a>
-            <a href="{% url 'authentication:logout' %}" class="text-black font-semibold hover:text-gray-600 transition">Logout</a>
+<nav class="bg-white shadow-lg fixed top-4 left-1/2 transform -translate-x-1/2 z-40 w-11/12 md:w-3/4 rounded-md py-2 px-4 md:px-6" style="font-family: 'Plus Jakarta Sans', sans-serif !important;">
+    <div class="max-w-7xl mx-auto flex items-center justify-between flex-wrap">
+        <!-- Left section -->
+        <div class="flex items-center space-x-4">
+            <h1 class="text-xl md:text-2xl mb-1 font-bold text-black">Qlean</h1>
+            <span class="md:inline-block text-sm md:text-base text-black font-medium">
+                Welcome, {{ user.user_type }} {{ user.name }} Flori!
+            </span>
         </div>
-        <div class="md:hidden flex items-center">
+
+        <!-- Right section -->
+        <div class="hidden md:flex items-center space-x-4 lg:space-x-8 ml-auto">
+            <a href="{% url 'main:show_main' %}" class="text-sm md:text-base text-black font-semibold hover:text-gray-600 transition">Home</a>
+            <a href="{% url 'mypay_service:mypay_dashboard' %}" class="text-sm md:text-base text-black font-semibold hover:text-gray-600 transition">MyPay</a>
+
+            {% if user.user_type == 'appuser' %}
+            <a href="{% url 'main:service' %}" class="text-sm md:text-base text-black font-semibold hover:text-gray-600 transition">My Order</a>
+            {% endif %}
+
+            <a href="{% url 'testi_vouchers:vouchers' %}" class="text-sm md:text-base text-black font-semibold hover:text-gray-600 transition">Vouchers</a>
+            <a href="{% url 'authentication:profile' %}" class="text-sm md:text-base text-black font-semibold hover:text-gray-600 transition">Profile</a>
+            <a href="{% url 'authentication:logout' %}" class="text-sm md:text-base text-black font-semibold hover:text-gray-600 transition">Logout</a>
+        </div>
+
+        <!-- Mobile menu button -->
+        <div class="flex items-center md:hidden">
             <button class="mobile-menu-button">
                 <svg class="w-6 h-6 text-black" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
                     <path d="M4 6h16M4 12h16M4 18h16"></path>
@@ -19,17 +33,20 @@
     </div>
 
     <!-- Mobile menu -->
-    <div class="mobile-menu hidden md:hidden px-4 w-full pt-2">
-        <div class="space-y-1">
-            <span class="block text-gray-700 px-3 py-2">Welcome, {{ user.username }}</span>
-            <a href="{% url 'main:show_main' %}" class="block text-center text-black font-semibold py-2 px-4 hover:text-gray-600 transition">Home</a>
-            <a href="{% url 'mypay_service:mypay_dashboard' %}" class="block text-center text-black font-semibold py-2 px-4 hover:text-gray-600 transition">MyPay</a>
-            <a href="{% url 'testi_vouchers:vouchers' %}" class="text-black font-semibold hover:text-gray-600 transition">Vouchers</a>
-            <a href="{% url 'authentication:profile' %}" class="text-black font-semibold hover:text-gray-600 transition">Profile</a>
-            <a href="{% url 'authentication:logout' %}" class="text-black font-semibold hover:text-gray-600 transition">Logout</a>
-        </div>
+    <div class="mobile-menu hidden md:hidden flex flex-col items-start space-y-2 w-full px-2 mt-2">
+        <a href="{% url 'main:show_main' %}" class="block text-black text-sm font-semibold hover:text-gray-600 transition">Home</a>
+        <a href="{% url 'mypay_service:mypay_dashboard' %}" class="block text-black text-sm font-semibold hover:text-gray-600 transition">MyPay</a>
+
+        {% if user.user_type == 'appuser' %}
+        <a href="{% url 'main:service' %}" class="block text-black text-sm font-semibold hover:text-gray-600 transition">My Order</a>
+        {% endif %}
+
+        <a href="{% url 'testi_vouchers:vouchers' %}" class="block text-black text-sm font-semibold hover:text-gray-600 transition">Vouchers</a>
+        <a href="{% url 'authentication:profile' %}" class="block text-black text-sm font-semibold hover:text-gray-600 transition">Profile</a>
+        <a href="{% url 'authentication:logout' %}" class="block text-black text-sm font-semibold hover:text-gray-600 transition">Logout</a>
     </div>
 
+    <!-- JavaScript for toggling mobile menu -->
     <script>
         const btn = document.querySelector("button.mobile-menu-button");
         const menu = document.querySelector(".mobile-menu");
