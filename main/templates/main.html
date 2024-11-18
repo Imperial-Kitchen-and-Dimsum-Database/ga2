@@ -2,7 +2,7 @@
 {% load static %}
 {% block meta %}
 <link rel="stylesheet" href="{% static 'css/authstyle.css' %}">
-
+<link rel="stylesheet" href="{% static 'css/global.css' %}">
 {% endblock meta %}
 
 {% block content %}
@@ -57,19 +57,20 @@
     <!-- Services Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {% for service in services %}
-        <div class="bg-white rounded-lg shadow-lg p-6{% if service.category == 'haircare' %} border-2 border-blue-500{% endif %}" data-category="{{ service.category }}">
+        <div class="bg-white rounded-xl shadow-lg p-6{% if service.category == 'haircare' %} border-2 border-blue-500{% endif %}" data-category="{{ service.category }}">
             <h2 class="text-2xl font-semibold mb-4">{{ service.title }}</h2>
             <div class="space-y-2">
                 {% for subcategory in service.subcategories %}
-                <a href="{% url 'main:subcategory' %}" class="subcategory-item block p-2 bg-yellow-200 rounded no-underline text-inherit hover:bg-yellow-300">
-                    {{ subcategory }}
+                <a href="{% url 'main:subcategory' %}">
+                    <button class="subcategory-item block w-full p-2 bg-yellow-200 rounded no-underline text-inherit hover:bg-yellow-300 mb-2">
+                        {{ subcategory }}
+                    </button>
                 </a>
                 {% endfor %}
             </div>
         </div>
         {% endfor %}
     </div>
-
 </div>
 
 {% include 'footer.html' %}
