@@ -13,6 +13,7 @@ def hero(request):
     return render(request, "hero.html")
 
 def login_user(request):
+
     if request.method == 'POST':
         phone_number = request.POST.get('phone_number')
         password = request.POST.get('password')
