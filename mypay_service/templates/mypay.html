@@ -226,14 +226,45 @@
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Add this line to include Chart.js -->
     <script>
+        // Calculate spending data from transactions
+        function calculateSpendingData() {
+            const transactions = Array.from(document.querySelectorAll('tbody tr')).map(row => ({
+                description: row.children[1].textContent,
+                amount: parseFloat(row.children[2].textContent.replace('$', '')),
+                isExpense: row.children[3].textContent.trim() === 'Expense'
+            }));
+
+            const categories = {
+                'Service Payments': 0,
+                'Withdrawals': 0,
+                'Other Expenses': 0
+            };
+
+            transactions.forEach(transaction => {
+                if (!transaction.isExpense) return;
+                
+                const desc = transaction.description.toLowerCase();
+                if (desc.includes('service') || desc.includes('session')) {
+                    categories['Service Payments'] += transaction.amount;
+                } else if (desc.includes('withdraw') || desc.includes('withdrawal')) {
+                    categories['Withdrawals'] += transaction.amount;
+                } else {
+                    categories['Other Expenses'] += transaction.amount;
+                }
+            });
+
+            return categories;
+        }
+
+        const spendingData = calculateSpendingData();
         const ctx = document.getElementById('spendingChart').getContext('2d');
         const spendingChart = new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: ['Groceries', 'Utilities', 'Entertainment', 'Others'],
+                labels: Object.keys(spendingData),
                 datasets: [{
                     label: 'Spending Overview',
-                    data: [300, 150, 100, 50], // Example data
+                    data: Object.values(spendingData),
                     backgroundColor: [
                         'rgb(218, 247, 166)',
                         'rgb(255, 195, 0)',
@@ -310,15 +341,49 @@
             closePayBillsModal();
         });
 
-        // Add this new function to update amount based on session selection
         function updateAmount(value) {
             document.getElementById('amount').value = value;
         }
 
-        // Add these new functions after your existing JavaScript
         function openTopUpModal() {
             document.getElementById('topUpModal').classList.remove('hidden');
             document.getElementById('topUpAmount').value = '';
+            document.getElementById('topUpButton').addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            const amount = parseFloat(document.getElementById('topUpAmount').value);
+
+            if (!amount || amount <= 0) {
+                alert('Please enter a valid amount');
+                return;
+            }
+
+            try {
+                const response = await fetch('/mypay/topup/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ amount: amount })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update UI balance
+                    document.querySelector('.text-3xl.font-bold').textContent = 
+                        `$${data.new_balance.toFixed(2)}`;
+                    alert('Top-up successful!');
+                    closeTopUpModal();
+                } else {
+                    alert(data.message);
+                }
+
+            } catch (error) {
+                alert('Top-up failed: ' + error.message);
+            }
+        });
         }
 
         function closeTopUpModal() {
@@ -348,12 +413,21 @@
             document.getElementById('sendModal').classList.add('hidden');
         }
 
-        // Handle send money form submission
-        document.getElementById('sendButton').addEventListener('click', function(e) {
+        // Helper function to get CSRF token
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+        }
+
+        // Replace the old sendButton event listener with this new one
+        document.getElementById('sendButton').addEventListener('click', async function(e) {
             e.preventDefault();
-            const phoneNumber = document.getElementById('phoneNumber').value;
-            const amount = document.getElementById('sendAmount').value;
             
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            const amount = parseFloat(document.getElementById('sendAmount').value);
+
+            // Validation
             if (!phoneNumber || phoneNumber.length < 10) {
                 alert('Please enter a valid phone number');
                 return;
@@ -362,9 +436,35 @@
                 alert('Please enter a valid amount');
                 return;
             }
-            
-            alert('Money sent successfully!');
-            closeSendModal();
+
+            try {
+                const response = await fetch('/mypay/transfer/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        phone: phoneNumber,
+                        amount: amount
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update UI balance
+                    document.querySelector('.text-3xl.font-bold').textContent = 
+                        `$${data.new_balance.toFixed(2)}`;
+                    alert('Transfer successful!');
+                    closeSendModal();
+                } else {
+                    alert(data.message);
+                }
+
+            } catch (error) {
+                alert('Transfer failed: ' + error.message);
+            }
         });
 
         // Add these new functions to your existing JavaScript

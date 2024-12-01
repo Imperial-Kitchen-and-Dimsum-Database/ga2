@@ -54,5 +54,105 @@ ORDER BY
     "SO".orderdate DESC,
     "SO".servicetime DESC;
 
--- Verify view
 SELECT * FROM "V_ORDER_COMPLETE" LIMIT 5;
+
+CREATE OR REPLACE PROCEDURE transfer_mypay_balance(
+    p_sender_id INTEGER,
+    p_receiver_id INTEGER, 
+    p_amount NUMERIC(10,2)
+) AS $$
+DECLARE
+    v_sender_balance NUMERIC(10,2);
+    v_transaction_id INTEGER;
+BEGIN
+    -- Validate amount is positive
+    IF p_amount <= 0 THEN
+        RAISE EXCEPTION 'Transfer amount must be positive';
+    END IF;
+
+    -- Check if users exist
+    IF NOT EXISTS (SELECT 1 FROM "TR_USER" WHERE id = p_sender_id) OR
+       NOT EXISTS (SELECT 1 FROM "TR_USER" WHERE id = p_receiver_id) THEN
+        RAISE EXCEPTION 'Invalid sender or receiver ID';
+    END IF;
+
+    -- Get sender's current balance
+    SELECT balance INTO v_sender_balance 
+    FROM "TR_MYPAY_BALANCE"
+    WHERE userid = p_sender_id
+    FOR UPDATE;
+
+    IF v_sender_balance < p_amount THEN
+        RAISE EXCEPTION 'Insufficient balance. Current balance: %', v_sender_balance;
+    END IF;
+
+    -- Begin transaction
+    BEGIN
+        -- Deduct from sender
+        UPDATE "TR_MYPAY_BALANCE"
+        SET balance = balance - p_amount
+        WHERE userid = p_sender_id;
+
+        -- Add to receiver
+        UPDATE "TR_MYPAY_BALANCE"
+        SET balance = balance + p_amount
+        WHERE userid = p_receiver_id;
+
+        -- Log transaction
+        INSERT INTO "TR_MYPAY_TRANSACTION" (
+            sender_id,
+            receiver_id,
+            amount,
+            transaction_type,
+            transaction_date
+        ) VALUES (
+            p_sender_id,
+            p_receiver_id,
+            p_amount,
+            'TRANSFER',
+            CURRENT_TIMESTAMP
+        ) RETURNING id INTO v_transaction_id;
+
+        -- Commit happens automatically if no errors
+    EXCEPTION
+        WHEN OTHERS THEN
+            RAISE EXCEPTION 'Transfer failed: %', SQLERRM;
+    END;
+
+    RAISE NOTICE 'Transfer successful. Transaction ID: %', v_transaction_id;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE PROCEDURE topup_mypay_balance(
+    p_user_id INTEGER,
+    p_amount NUMERIC(10,2),
+    OUT p_new_balance NUMERIC(10,2)
+) AS $$
+BEGIN
+    -- Validate amount
+    IF p_amount <= 0 THEN
+        RAISE EXCEPTION 'Top-up amount must be positive';
+    END IF;
+
+    -- Update balance
+    UPDATE "TR_MYPAY_BALANCE"
+    SET balance = balance + p_amount
+    WHERE userid = p_user_id
+    RETURNING balance INTO p_new_balance;
+
+    -- Log transaction
+    INSERT INTO "TR_MYPAY_TRANSACTION" (
+        sender_id,
+        receiver_id,
+        amount,
+        transaction_type,
+        transaction_date
+    ) VALUES (
+        p_user_id,
+        p_user_id,
+        p_amount,
+        'TOPUP',
+        CURRENT_TIMESTAMP
+    );
+END;
+$$ LANGUAGE plpgsql;
