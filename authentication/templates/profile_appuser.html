@@ -22,14 +22,14 @@
       <h3 class="text-lg text-gray-900 font-extrabold">Details</h3>
       <hr class="border-t-1 border-gray-300 mt-2" />
       <ul class="text-sm mt-2 text-gray-900 space-y-2">
-        <li><strong>Name:</strong> {{ user.name }} Flori</li>
-        <li><strong>Level:</strong> {{ user.level }} 3</li>
-        <li><strong>Sex:</strong> {{ user.sex }} F </li>
+        <li><strong>Name:</strong> {{ user.name }}</li>
+        <li><strong>Level:</strong> {{ user.level }} </li>
+        <li><strong>Sex:</strong> {{ user.sex }} </li>
         <li><strong>Phone:</strong> {{ user.phone }} </li>
         <hr class="border-t-1 border-gray-300 my-6" />
-        <li><strong>Birth Date:</strong> {{ user.birth_date }} 06/10/2005</li>
-        <li><strong>Address:</strong> {{ user.address }} 970 Park Pl San Mateo, California 94403 US</li>
-        <li><strong>MyPay Balance:</strong> ${{ user.pay_balance }}8989</li>
+        <li><strong>Birth Date:</strong> {{ user.birth_date }} </li>
+        <li><strong>Address:</strong> {{ user.address }}</li>
+        <li><strong>MyPay Balance:</strong> ${{ user.pay_balance }}</li>
       </ul>
       <button 
         id="updateButton"
@@ -78,8 +78,8 @@
           name="sex"
           class="rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none sm:text-sm"
         >
-          <option value="Male" {% if user.sex == "Male" %}selected{% endif %}>Male</option>
-          <option value="Female" {% if user.sex == "Female" %}selected{% endif %}>Female</option>
+          <option value="M">Male</option>
+          <option value="F">Female</option>
         </select>
       </div>
       <div class="mb-4">

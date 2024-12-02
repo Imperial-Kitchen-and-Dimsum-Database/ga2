@@ -13,7 +13,7 @@
     <div style="background: linear-gradient(90deg, #FFF196 0%, #FFB74C 50%, #FFA5A5 100%);" class="absolute top-0 left-0 h-1/5 w-full z-0"></div>
     <div class="flex items-center space-x-4">
       <img
-        src="{% static 'image/default_avatar.png' %}"
+        src="{{ user.profile_picture}}"
         alt="Profile Picture"
         class="w-24 h-24 bg-white rounded-full z-10" 
       />
@@ -23,20 +23,20 @@
       <h3 class="text-lg text-gray-900 font-extrabold">Details</h3>
       <hr class="border-t-1 border-gray-300 mt-2" />
       <ul class="text-sm mt-2 text-gray-900 space-y-2">
-        <li><strong>Name:</strong> {{ user.name }}Keidi</li>
-        <li><strong>Sex:</strong> {{ user.sex }}F</li>
-        <li><strong>Phone:</strong> {{ user.phone }}1239487</li>
+        <li><strong>Name:</strong> {{ user.name }}</li>
+        <li><strong>Sex:</strong> {{ user.sex }}</li>
+        <li><strong>Phone:</strong> {{ user.phone }}</li>
         <hr class="border-t-1 border-gray-300 my-6" />
-        <li><strong>Birth Date:</strong> {{ user.birth_date }}06/09/2420</li>
-        <li><strong>Address:</strong> {{ user.address }}444 De Haro St San Francisco, CA 94107 US</li>
-        <li><strong>MyPay Balance:</strong> ${{ user.pay_balance }}9999</li>
+        <li><strong>Birth Date:</strong> {{ user.birth_date }}</li>
+        <li><strong>Address:</strong> {{ user.address }}</li>
+        <li><strong>MyPay Balance:</strong> ${{ user.pay_balance }}</li>
         <hr class="border-t-1 border-gray-300 my-6" />
-        <li><strong>Bank Name:</strong> {{ user.bank_name }}Gopay</li>
-        <li><strong>Account Number:</strong> {{ user.account_number }}19283432</li>
-        <li><strong>NPWP:</strong> {{ user.npwp }}234532523454</li>
-        <li><strong>Rate:</strong> ${{ user.rate }}123</li>
+        <li><strong>Bank Name:</strong> {{ user.bank_name }}</li>
+        <li><strong>Account Number:</strong> {{ user.account_number }}</li>
+        <li><strong>NPWP:</strong> {{ user.npwp }}</li>
+        <li><strong>Rate:</strong> ${{ user.rate }}</li>
         <hr class="border-t-1 border-gray-300 my-6" />
-        <li><strong>Completed Orders:</strong> ${{ user.orders }}20</li>
+        <li><strong>Completed Orders:</strong> ${{ user.orders }}</li>
         <li><strong>Job Category:</strong></li>
             <ul>
                 <li> 1. Home Cleaning</li>
@@ -90,8 +90,8 @@
           name="sex"
           class="rounded-md relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none sm:text-sm"
         >
-          <option value="Male">Male</option>
-          <option value="Female">Female</option>
+          <option value="M">Male</option>
+          <option value="F">Female</option>
         </select>
       </div>
       <div class="mb-4">
