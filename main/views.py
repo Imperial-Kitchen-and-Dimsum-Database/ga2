@@ -1,5 +1,25 @@
 from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
+from functools import wraps
+from django.shortcuts import redirect
+
+from functools import wraps
+from django.shortcuts import redirect
+
+def login_required(view_func=None, login_url='authentication:login'):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(request, *args, **kwargs):
+            # check if phone_number is in the session
+            if 'phone_number' not in request.session:
+                return redirect(login_url)
+            return func(request, *args, **kwargs)
+        return wrapper
+
+    # if used as @login_required with no parentheses
+    if view_func:
+        return decorator(view_func)
+    return decorator
+
 
 @login_required(login_url='/auth/hero/')
 def show_main(request):
