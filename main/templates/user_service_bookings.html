@@ -2,7 +2,6 @@
 {% load static %} 
 {% block meta %}
 <link rel="stylesheet" href="{% static 'css/global.css' %}">
-
 {% endblock meta %}
 {% block content %}
 {% include 'navbar.html' %}
@@ -64,11 +63,11 @@
                     </div>
                     <div class="w-1/6 text-center">
                         <p class="text-gray-500 font-semibold">Price</p>
-                        <p class="text-gray-700">{{ order.total_payment }}</p>
+                        <p class="text-gray-700">${{ order.total_payment }}</p>
                     </div>
                     <div class="w-1/6 text-center">
                         <p class="text-gray-500 font-semibold">Order Date</p>
-                        <p class="text-gray-700">${{ order.order_date }}</p>
+                        <p class="text-gray-700">{{ order.order_date }}</p>
                     </div>
                     <div class="w-1/6 text-center">
                         <p class="text-gray-500 font-semibold">Status</p>

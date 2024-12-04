@@ -50,31 +50,30 @@
         <input type="text" id="search-input" placeholder="Search for services..." class="p-2 border rounded-md w-1/2">
         <select id="category-select" class="ml-4 p-2 border rounded-md">
             <option value="">All Categories</option>
-            <option value="home-cleaning">Home Cleaning</option>
-            <option value="deep-cleaning">Deep Cleaning</option>
-            <option value="air-conditioning">Air Conditioning Service</option>
-            <option value="massage">Massage</option>
-            <option value="haircare">Haircare</option>
+            {% for category in categories %}
+            <option value="{{ category|slugify }}">{{ category }}</option>
+            {% endfor %}
         </select>
     </div>
 
+
     <!-- Services Grid -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {% for service in services %}
-        <div class="bg-white rounded-xl shadow-lg p-6{% if service.category == 'haircare' %} border-2 border-blue-500{% endif %}" data-category="{{ service.category }}">
-            <h2 class="text-2xl font-semibold mb-4">{{ service.title }}</h2>
+        {% for category, subcategories in categories.items %}
+        <div class="bg-white rounded-xl shadow-lg p-6" data-category="{{ category | slugify }}">
+            <h2 class="text-2xl font-semibold mb-4">{{ category }}</h2>
             <div class="space-y-2">
-                {% for subcategory in service.subcategories %}
-                <a href="{% url 'main:subcategory' %}">
+                {% for subcategory in subcategories %}
+                <a href="{% url 'main:subcategory' subcategory.id %}">
                     <button class="subcategory-item block w-full p-2 bg-yellow-200 rounded no-underline text-inherit hover:bg-yellow-300 mb-2">
-                        {{ subcategory }}
+                        {{ subcategory.name }}
                     </button>
                 </a>
                 {% endfor %}
             </div>
         </div>
         {% endfor %}
-    </div>
+    </div>    
 </div>
 
 {% include 'footer.html' %}
@@ -105,6 +104,7 @@
 
     searchInput.addEventListener('input', filterItems);
     categorySelect.addEventListener('change', filterItems);
+
 </script>
 
 {% endblock content %}

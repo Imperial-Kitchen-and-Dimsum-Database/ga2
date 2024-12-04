@@ -6,9 +6,9 @@ app_name = 'main'
 urlpatterns = [
     path('', show_main, name='show_main'),
     path('service/', service, name='service'),
-    path('subcategory/', subcategory_page, name='subcategory'),
+    path('subcategory/<uuid:subcategory_id>/', subcategory_page, name='subcategory'),
     path('status/', status, name='status'),
     path('worker_status/', worker_status, name='worker_status'),
     path('user_service_bookings/', user_service_bookings, name='user_service_bookings'),
-    path('worker/<int:worker_id>/', worker_profile, name='worker_profile'),
+    path('worker/<uuid:worker_id>/', worker_profile, name='worker_profile'),
 ]

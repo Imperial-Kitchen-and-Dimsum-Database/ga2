@@ -14,12 +14,12 @@
         <div class="container mx-auto px-6 py-12 h-full">
             <div class="flex flex-col md:flex-row items-center justify-between h-full">
                 <div class="md:w-1/2 text-white z-30">
-                    <h1 class="text-5xl md:text-7xl font-bold mb-4">Subcategory Name</h1>
-                    <p class="text-lg mb-8">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer eget dignissim lacus. Donec vel ante non lectus cursus cursus sit amet et ligula. Sed efficitur sem vitae velit pharetra, quis tristique eros aliquam.</p>
+                    <h1 class="text-5xl md:text-7xl font-bold mb-4">{{ subcategory_name }}</h1>
+                    <p class="text-lg mb-8">{{ description }}</p>
                 </div>
                 <div class="md:w-1/2 mt-8 md:mt-0 flex justify-end">
                     <img src="{% static 'image/star-dynamic-color.png' %}" alt="Star" class="w-1/2 h-auto object-contain">
-                </div>  
+                </div>
             </div>
         </div>
     </div>
@@ -28,12 +28,33 @@
         <!-- Left Box -->
         <div class="flex flex-col w-[48%] space-y-4 bg-white p-6 rounded-3xl drop-shadow-lg">
             {% for session in sessions %}
-                {% include 'session_card.html' with session=session %}
+                <div class="bg-white rounded-lg shadow-md p-6 mb-4 transition-all hover:shadow-lg">
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1">
+                            <h3 class="text-xl font-bold text-gray-800">{{ session.name }}</h3>
+                            <div class="mt-2 space-y-2">
+                                <p class="text-gray-600">
+                                    <span class="inline-block w-24">Price:</span>
+                                    <span class="font-medium">${{ session.price }}</span>
+                                </p>
+                            </div>
+                            <button 
+                                class="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 px-4 rounded-full mt-8 transition-colors" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#bookServiceModal" 
+                                data-session-name="{{ session.name }}"
+                                data-session-price="{{ session.price }}">
+                                Book Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
             {% endfor %}
         </div>
 
         <!-- Right Box -->
         <div class="flex flex-col w-[48%] space-y-4 bg-black p-6 rounded-3xl drop-shadow-lg">
+            <h2 class="text-3xl font-semibold text-center text-white">Workers</h2>
             <div class="bg-white rounded-lg p-6 w-full">
                 <div class="flex overflow-x-auto space-x-6 pb-4">
                     {% for worker in workers %}
@@ -42,17 +63,36 @@
                             <img src="{{ worker.image }}" alt="{{ worker.name }}" class="w-20 h-20 rounded-full object-cover">
                             <div class="text-center">
                                 <h3 class="font-semibold text-gray-900">{{ worker.name }}</h3>
-                                <p class="text-gray-600 text-sm">{{ worker.experience }} years exp.</p>
+                                <p class="text-gray-600 text-sm">{{ worker.experience }} orders completed</p>
+                                <p class="text-yellow-500 text-sm">Rating: {{ worker.rate }}</p>
                             </div>
                         </div>
                     </a>
                     {% endfor %}
                 </div>
-            </div>
+                {% if not has_joined %}
+                <div class="text-center mt-6">
+                    <button
+                        class="bg-[#FFB74C] hover:bg-[#e9989b] text-black font-bold py-2 px-6 rounded-full transition-colors">
+                        Join Us As A Worker!
+                    </button>
+                </div>
+                {% endif %}
+            </div>   
+
+            
             <h2 class="text-3xl font-semibold text-center text-white">Testimonials</h2>
-            {% include 'testi_card.html' %}
-            {% include 'testi_card.html' %}
-            {% include 'testi_card.html' %}
+            <div class="bg-white rounded-lg p-4">
+                {% for testi in testimonials %}
+                <div class="mb-4">
+                    <p class="font-medium text-gray-900">"{{ testi.text }}"</p>
+                    <p class="text-gray-600 text-sm">- {{ testi.customer_name }}</p>
+                    <p class="text-yellow-500 text-sm">Rating: {{ testi.rating }}/10</p>
+                </div>
+                {% empty %}
+                <p class="text-gray-400">No testimonials available for this subcategory.</p>
+                {% endfor %}
+            </div>         
         </div>
     </div>
 </div>
@@ -91,12 +131,12 @@
 
                     <div class="mb-4">
                         <label for="paymentMethod" class="form-label font-medium text-gray-700">Payment Method</label>
-                        <select class="form-select border-yellow-400 rounded-md px-4 py-2 focus:ring-2 focus:ring-yellow-500 focus:outline-none" id="paymentMethod">
-                            <option value="credit-card">Credit Card</option>
-                            <option value="paypal">PayPal</option>
-                            <option value="bank-transfer">Bank Transfer</option>
+                        <select class="form-select border-yellow-400 rounded-md px-4 py-2 focus:ring-2 focus:ring-yellow-500 focus:outline-none" id="paymentMethod" name="payment_method">
+                            {% for method in payment_methods %}
+                            <option value="{{ method.id }}">{{ method.name }}</option>
+                            {% endfor %}
                         </select>
-                    </div>
+                    </div>                    
 
                     <div class="modal-footer flex justify-end space-x-3 bg-gray-100 rounded-b-lg p-4">
                         <button type="button" class="bg-gray-400 text-white rounded-full px-6 py-2 hover:bg-gray-500 transition" data-bs-dismiss="modal">Cancel</button>
@@ -109,7 +149,6 @@
 </div>
 
 {% include 'footer.html' %}
-
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -137,8 +176,6 @@
             orderDateField.value = formattedDate;
         });
     });
-
-
 </script>
 
 {% endblock content %}

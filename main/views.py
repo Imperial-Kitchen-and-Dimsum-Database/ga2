@@ -1,9 +1,9 @@
 from django.shortcuts import render
 from functools import wraps
 from django.shortcuts import redirect
-
-from functools import wraps
-from django.shortcuts import redirect
+from django.db import connection
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
 
 def login_required(view_func=None, login_url='authentication:login'):
     def decorator(func):
@@ -23,56 +23,101 @@ def login_required(view_func=None, login_url='authentication:login'):
 
 @login_required(login_url='/auth/hero/')
 def show_main(request):
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT sc.CategoryName as category_name,
+                   json_agg(json_build_object('id', ss.Id, 'name', ss.SubcategoryName)) as subcategories
+            FROM "SERVICE_CATEGORY" sc
+            LEFT JOIN "SERVICE_SUBCATEGORY" ss ON sc.Id = ss.ServiceCategoryId
+            GROUP BY sc.Id, sc.CategoryName
+        """)
+
+        categories = {}
+        for row in cursor.fetchall():
+            categories[row[0]] = row[1]
+
     context = {
-        'name': "Database Assignment",
-        'services': [
-            {
-                'category': 'home-cleaning',
-                'title': 'Home Cleaning',
-                'subcategories': ['Daily Cleaning', 'Ironing']
-            },
-            {
-                'category': 'deep-cleaning',
-                'title': 'Deep Cleaning',
-                'subcategories': ['Floor and Carpet Cleaning', 'Bathroom and Tile Cleaning']
-            },
-            {
-                'category': 'air-conditioning',
-                'title': 'Air Conditioning Service',
-                'subcategories': ['Filter Replacement', 'Full AC Maintenance']
-            },
-            {
-                'category': 'massage',
-                'title': 'Massage',
-                'subcategories': ['Hot Stone Massage', 'Aromatherapy Massage']
-            },
-            {
-                'category': 'haircare',
-                'title': 'Haircare',
-                'subcategories': ['Haircut', 'Hair Coloring']
-            }
-        ]
+        'categories': categories,
     }
     return render(request, "main.html", context)
 
 def service(request):
     return render(request, "service_details.html")
 
-def subcategory_page(request):
-    context = {
-        'sessions': [
-            {'name': 'Basic Cleaning', 'duration': 2, 'price': 50},
-            {'name': 'Deep Cleaning', 'duration': 4, 'price': 90},
-            {'name': 'Premium Cleaning', 'duration': 6, 'price': 130},
-        ],
-        'workers': [
-            {'id': '1', 'name': 'John Doe', 'experience': 5, 'image': '../static/image/person.png'},
-            {'id': '2', 'name': 'Jane Smith', 'experience': 3, 'image': '../static/image/person.png'},
-            {'id': '3', 'name': 'Mike Johnson', 'experience': 7, 'image': '../static/image/person.png'},
-            {'id': '4', 'name': 'Sarah Williams', 'experience': 4, 'image': '../static/image/person.png'},
+def subcategory_page(request, subcategory_id):
+    user_id = request.user.id  
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT ss.SubcategoryName, ss.Description, sc.CategoryName, sc.Id AS ServiceCategoryId
+            FROM "SERVICE_SUBCATEGORY" ss
+            LEFT JOIN "SERVICE_CATEGORY" sc ON ss.ServiceCategoryId = sc.Id
+            WHERE ss.Id = %s
+        """, [subcategory_id])
+        subcategory = cursor.fetchone()
+
+        if not subcategory:
+            return render(request, '404.html', {'error': 'Subcategory not found.'})
+
+        cursor.execute("""
+            SELECT Session, Price
+            FROM "SERVICE_SESSION"
+            WHERE SubcategoryId = %s
+        """, [subcategory_id])
+        sessions = [
+            {
+                'name': f'Session {row[0]}',
+                'price': row[1],
+            }
+            for row in cursor.fetchall()
         ]
+
+        cursor.execute("""
+            SELECT w.Id, u.Name, w.PicURL, w.TotalFinishOrder, w.Rate
+            FROM "WORKER_SERVICE_CATEGORY" wsc
+            JOIN "WORKER" w ON w.Id = wsc.WorkerId
+            JOIN "USER" u ON u.Id = w.Id
+            WHERE wsc.ServiceCategoryId = (
+                SELECT ServiceCategoryId FROM "SERVICE_SUBCATEGORY" WHERE Id = %s
+            )
+        """, [subcategory_id])
+        workers = [
+            {
+                'id': row[0],
+                'name': row[1],
+                'image': row[2],
+                'experience': row[3],
+                'rate': row[4],
+            }
+            for row in cursor.fetchall()
+        ]
+
+        cursor.execute("""
+            SELECT 1 FROM "WORKER_SERVICE_CATEGORY" 
+            WHERE WorkerId = %s AND ServiceCategoryId = (
+                SELECT ServiceCategoryId FROM "SERVICE_SUBCATEGORY" WHERE Id = %s
+            )
+        """, [user_id, subcategory_id])
+        has_joined = cursor.fetchone() is not None
+
+        cursor.execute("""
+            SELECT Id, Name
+            FROM "PAYMENT_METHOD"
+        """)
+        payment_methods = [{'id': row[0], 'name': row[1]} for row in cursor.fetchall()]
+
+    context = {
+        'subcategory_name': subcategory[0],
+        'description': subcategory[1],
+        'category_name': subcategory[2],
+        'service_category_id': subcategory[3],
+        'sessions': sessions,
+        'workers': workers,
+        'has_joined': has_joined,
+        'payment_methods': payment_methods,  
     }
+
     return render(request, 'subcategory_page.html', context)
+
 
 def status(request):
     return render(request,"status.html" )
@@ -121,89 +166,73 @@ def worker_status(request):
     }
     return render(request, 'worker_status.html', context)
 
-@login_required(login_url='/auth/hero/')
-@login_required(login_url='/auth/hero/')
+@login_required
 def user_service_bookings(request):
-    context = {
-        'orders': [
+    user_id = request.user.id  
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT tso.Id, tso.orderDate, tso.serviceDate, tso.serviceTime, 
+                   tso.TotalPrice, tso.discountCode, pm.Name AS paymentMethod,
+                   ss.Session, ss.Price, sc.CategoryName
+            FROM "TR_SERVICE_ORDER" tso
+            LEFT JOIN "PAYMENT_METHOD" pm ON tso.paymentMethodId = pm.Id
+            LEFT JOIN "SERVICE_SESSION" ss ON tso.serviceCategoryId = ss.SubcategoryId AND tso.Session = ss.Session
+            LEFT JOIN "SERVICE_CATEGORY" sc ON sc.Id = tso.serviceCategoryId
+            WHERE tso.customerId = %s
+            ORDER BY tso.orderDate DESC
+        """, [user_id])
+
+        orders = [
             {
-                'order_id': '001',
-                'service_name': 'Home Cleaning - Basic Cleaning',
-                'order_status': 'Waiting for Payment',
-                'order_date': '2024-01-15',
-                'total_payment': 50,
-                'testimonial_created': False,
-                'subcategory': 'Home Cleaning',
-            },
-            {
-                'order_id': '002',
-                'service_name': 'Deep Cleaning - Premium Cleaning',
-                'order_status': 'Searching for Nearest Workers',
-                'order_date': '2024-01-10',
-                'total_payment': 130,
-                'testimonial_created': False,
-                'subcategory': 'Deep Cleaning',
-            },
-            {
-                'order_id': '003',
-                'service_name': 'Air Conditioning - Full AC Maintenance',
-                'order_status': 'Order Completed',
-                'order_date': '2024-01-08',
-                'total_payment': 200,
-                'testimonial_created': False,
-                'subcategory': 'Air Conditioning',
-            },
-        ],
-        'subcategories': ['Home Cleaning', 'Deep Cleaning', 'Air Conditioning'],
-        'status_options': ['Waiting for Payment', 'Searching for Nearest Workers', 'Order Completed'],
-    }
-    return render(request, 'user_service_bookings.html', context)
+                'id': row[0],
+                'order_date': row[1],
+                'service_date': row[2],
+                'service_time': row[3],
+                'total_price': row[4],
+                'discount_code': row[5],
+                'payment_method': row[6],
+                'session': row[7],
+                'price': row[8],
+                'category_name': row[9],
+            }
+            for row in cursor.fetchall()
+        ]
+
+    return render(request, "user_service_bookings.html", {
+        'orders': orders
+    })
+
 
 
 def worker_profile(request, worker_id):
-    workers_data = {
-        1: {
-            'name': 'John Doe',
-            'rate': 9.5,
-            'finished_orders': 25,
-            'phone': '123-456-7890',
-            'birth_date': '1990-05-20',
-            'address': '123 Main St, Springfield',
-            'image': '/static/image/person.png',
-        },
-        2: {
-            'name': 'Jane Smith',
-            'rate': 8.7,
-            'finished_orders': 18,
-            'phone': '987-654-3210',
-            'birth_date': '1995-07-12',
-            'address': '456 Oak Ave, Gotham',
-            'image': '/static/image/person.png',
-        },
-        3: {
-            'name': 'Mike Johnson',
-            'rate': 9.2,
-            'finished_orders': 30,
-            'phone': '555-333-2222',
-            'birth_date': '1988-03-10',
-            'address': '789 Pine Rd, Metropolis',
-            'image': '/static/image/person.png',
-        },
-        4: {
-            'name': 'Sarah Williams',
-            'rate': 8.9,
-            'finished_orders': 20,
-            'phone': '444-666-1111',
-            'birth_date': '1992-08-15',
-            'address': '321 Elm St, Star City',
-            'image': '/static/image/person.png',
-        },
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT 
+                u.Name, 
+                w.Rate, 
+                w.TotalFinishOrder, 
+                u.PhoneNum, 
+                u.DoB, 
+                u.Address, 
+                w.PicURL
+            FROM "WORKER" w
+            JOIN "USER" u ON w.Id = u.Id
+            WHERE w.Id = %s
+        """, [worker_id])
+        worker = cursor.fetchone()
+
+        if not worker:
+            return render(request, '404.html', {'error': 'Worker not found.'})
+
+    worker_data = {
+        'name': worker[0],
+        'rate': worker[1],
+        'finished_orders': worker[2],
+        'phone': worker[3],
+        'birth_date': worker[4],
+        'address': worker[5],
+        'image': worker[6],
     }
 
-    worker = workers_data.get(worker_id, None)
+    return render(request, 'worker_profile.html', {'worker': worker_data})
 
-    if worker:
-        context = {'worker': worker}
-        return render(request, 'worker_profile.html', context)
-    else:
-        return render(request, '404.html')

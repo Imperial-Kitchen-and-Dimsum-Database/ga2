@@ -13,7 +13,7 @@
             <a href="{% url 'main:show_main' %}" class="text-sm md:text-base text-black font-semibold hover:text-gray-600 transition">Home</a>
             <a href="{% url 'mypay_service:mypay_dashboard' %}" class="text-sm md:text-base text-black font-semibold hover:text-gray-600 transition">MyPay</a>
 
-            {% if user.user_type == 'appuser' %}
+            {% if request.COOKIES.user_role == 'appuser' %}
             <a href="{% url 'main:user_service_bookings' %}" class="text-sm md:text-base text-black font-semibold hover:text-gray-600 transition">My Order</a>
             {% endif %}
 
