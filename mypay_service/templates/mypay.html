@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% block content %}
+{% csrf_token %}
 {% include 'navbar.html' %}
 <div class="mt-24">
 <body class="bg-gray-50">
@@ -11,7 +12,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="p-6 bg-gradient-to-r from-yellow-400 to-yellow-500 rounded-lg text-white">
                     <h3 class="text-xl font-semibold mb-2">Current Balance</h3>
-                    <p class="text-3xl font-bold mb-4">$5,000.00</p>
+                    <p class="text-3xl font-bold mb-4">${{ current_balance|floatformat:2 }}</p>
                     <div class="flex space-x-2">
                         <button onclick="openSendModal()" class="bg-white text-yellow-500 hover:bg-yellow-50 font-bold py-2 px-4 rounded-lg transition duration-300 flex items-center">
                             <i class="fas fa-arrow-up mr-2"></i>Send
@@ -19,9 +20,11 @@
                         <button onclick="openTopUpModal()" class="bg-white text-yellow-500 hover:bg-yellow-50 font-bold py-2 px-4 rounded-lg transition duration-300 flex items-center">
                             <i class="fas fa-arrow-down mr-2"></i>Deposit
                         </button>
+                        {% if is_worker %}
                         <button onclick="openWithdrawModal()" class="bg-white text-yellow-500 hover:bg-yellow-50 font-bold py-2 px-4 rounded-lg transition duration-300 flex items-center">
                             <i class="fas fa-university mr-2"></i>Withdraw
                         </button>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="p-6 bg-white border border-gray-200 rounded-lg">
@@ -56,7 +59,7 @@
         <div class="bg-white shadow-lg rounded-lg p-6">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-gray-800">Recent Transactions</h2>
-                <button class="text-yellow-500 hover:text-yellow-600 font-semibold">View All</button>
+                <a href="{% url 'mypay_service:all_transactions' %}" class="text-yellow-500 hover:text-yellow-600 font-semibold">View All</a>
             </div>
             <div class="overflow-x-auto">
                 <table class="min-w-full">
@@ -76,8 +79,8 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ transaction.description }}</td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ transaction.amount }}</td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {% if 'Deposit' in transaction.description %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
-                                    {% if 'Deposit' in transaction.description %}Income{% else %}Expense{% endif %}
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {% if 'Deposit' in transaction.description or 'Topup' in transaction.description or 'Top-up' in transaction.description or transaction.description == 'Transfer MyPay to another user' and transaction.amount < 0 %}bg-green-100 text-green-800{% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                    {% if 'Deposit' in transaction.description or 'Topup' in transaction.description or 'Top-up' in transaction.description or transaction.description == 'Transfer MyPay to another user' and transaction.amount < 0 %}Income{% else %}Expense{% endif %}
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
@@ -348,61 +351,55 @@
         function openTopUpModal() {
             document.getElementById('topUpModal').classList.remove('hidden');
             document.getElementById('topUpAmount').value = '';
-            document.getElementById('topUpButton').addEventListener('click', async function(e) {
-            e.preventDefault();
-            
-            const amount = parseFloat(document.getElementById('topUpAmount').value);
-
-            if (!amount || amount <= 0) {
-                alert('Please enter a valid amount');
-                return;
-            }
-
-            try {
-                const response = await fetch('/mypay/topup/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken')
-                    },
-                    body: JSON.stringify({ amount: amount })
-                });
-
-                const data = await response.json();
-                
-                if (data.success) {
-                    // Update UI balance
-                    document.querySelector('.text-3xl.font-bold').textContent = 
-                        `$${data.new_balance.toFixed(2)}`;
-                    alert('Top-up successful!');
-                    closeTopUpModal();
-                } else {
-                    alert(data.message);
-                }
-
-            } catch (error) {
-                alert('Top-up failed: ' + error.message);
-            }
-        });
         }
 
         function closeTopUpModal() {
             document.getElementById('topUpModal').classList.add('hidden');
         }
 
-        // Handle top up form submission
-        document.getElementById('topUpButton').addEventListener('click', function(e) {
-            e.preventDefault();
-            const amount = document.getElementById('topUpAmount').value;
-            if (!amount || amount <= 0) {
-                alert('Please enter a valid amount');
-                return;
-            }
-            alert('Top up processed!');
-            closeTopUpModal();
-        });
+        // Single event listener for top up
+        const topUpButton = document.getElementById('topUpButton');
+        if (topUpButton) {  // Check if button exists
+            // Remove any existing listeners
+            topUpButton.replaceWith(topUpButton.cloneNode(true));
+            // Add single listener to the new button
+            document.getElementById('topUpButton').addEventListener('click', async function(e) {
+                e.preventDefault();
+                
+                const amount = parseFloat(document.getElementById('topUpAmount').value);
+                
+                if (!amount || amount <= 0) {
+                    alert('Please enter a valid amount');
+                    return;
+                }
 
-        // Add these new functions after your existing JavaScript
+                try {
+                    const response = await fetch('/mypay/topup/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCookie('csrftoken')
+                        },
+                        body: JSON.stringify({ amount: amount })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        document.querySelector('.text-3xl.font-bold').textContent = 
+                            `$${data.new_balance.toFixed(2)}`;
+                        alert('Top-up successful!');
+                        closeTopUpModal();
+                        window.location.reload();
+                    } else {
+                        alert(data.message);
+                    }
+                } catch (error) {
+                    alert('Top-up failed: ' + error.message);
+                }
+            });
+        }
+
         function openSendModal() {
             document.getElementById('sendModal').classList.remove('hidden');
             document.getElementById('phoneNumber').value = '';
@@ -420,7 +417,6 @@
             if (parts.length === 2) return parts.pop().split(';').shift();
         }
 
-        // Replace the old sendButton event listener with this new one
         document.getElementById('sendButton').addEventListener('click', async function(e) {
             e.preventDefault();
             
@@ -437,34 +433,7 @@
                 return;
             }
 
-            try {
-                const response = await fetch('/mypay/transfer/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken')
-                    },
-                    body: JSON.stringify({
-                        phone: phoneNumber,
-                        amount: amount
-                    })
-                });
-
-                const data = await response.json();
-                
-                if (data.success) {
-                    // Update UI balance
-                    document.querySelector('.text-3xl.font-bold').textContent = 
-                        `$${data.new_balance.toFixed(2)}`;
-                    alert('Transfer successful!');
-                    closeSendModal();
-                } else {
-                    alert(data.message);
-                }
-
-            } catch (error) {
-                alert('Transfer failed: ' + error.message);
-            }
+            
         });
 
         // Add these new functions to your existing JavaScript
@@ -480,11 +449,11 @@
         }
 
         // Handle withdraw form submission
-        document.getElementById('withdrawButton').addEventListener('click', function(e) {
+        document.getElementById('withdrawButton').addEventListener('click', async function(e) {
             e.preventDefault();
             const bankName = document.getElementById('bankName').value;
             const accountNumber = document.getElementById('accountNumber').value;
-            const amount = document.getElementById('withdrawAmount').value;
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
             
             if (!bankName) {
                 alert('Please select a bank');
@@ -498,9 +467,35 @@
                 alert('Please enter a valid amount');
                 return;
             }
-            
-            alert('Withdrawal processed!');
-            closeWithdrawModal();
+
+            try {
+                const response = await fetch('/mypay/withdraw/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({
+                        bank_name: bankName,
+                        account_number: accountNumber,
+                        amount: amount
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.querySelector('.text-3xl.font-bold').textContent = 
+                        `$${data.new_balance.toFixed(2)}`;
+                    alert('Withdrawal successful!');
+                    closeWithdrawModal();
+                    window.location.reload();
+                } else {
+                    alert(data.message);
+                }
+            } catch (error) {
+                alert('Withdrawal failed: ' + error.message);
+            }
         });
     </script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> 

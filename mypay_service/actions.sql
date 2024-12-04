@@ -56,44 +56,97 @@ ORDER BY
 
 SELECT * FROM "V_ORDER_COMPLETE" LIMIT 5;
 
+-- Create error logging table
+CREATE TABLE IF NOT EXISTS "TR_ERROR_LOG" (
+    id SERIAL PRIMARY KEY,
+    error_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    procedure_name VARCHAR(100),
+    error_message TEXT,
+    error_details TEXT,
+    user_id INTEGER,
+    additional_data JSONB
+);
+
+CREATE OR REPLACE PROCEDURE topup_mypay_balance(
+    p_user_id INTEGER,
+    p_amount NUMERIC(10,2),
+    OUT p_new_balance NUMERIC(10,2)
+) AS $$
+BEGIN
+    -- Validate amount
+    IF p_amount <= 0 THEN
+        RAISE EXCEPTION 'Top-up amount must be positive';
+    END IF;
+
+    BEGIN
+        -- Update balance
+        UPDATE "TR_MYPAY_BALANCE"
+        SET balance = balance + p_amount
+        WHERE userid = p_user_id
+        RETURNING balance INTO p_new_balance;
+
+        -- Log transaction
+        INSERT INTO "TR_MYPAY_TRANSACTION" (
+            sender_id,
+            receiver_id,
+            amount,
+            transaction_type,
+            transaction_date
+        ) VALUES (
+            p_user_id,
+            p_user_id,
+            p_amount,
+            'TOPUP',
+            CURRENT_TIMESTAMP
+        );
+
+    EXCEPTION WHEN OTHERS THEN
+        INSERT INTO "TR_ERROR_LOG" (
+            procedure_name,
+            error_message,
+            error_details,
+            user_id,
+            additional_data
+        ) VALUES (
+            'topup_mypay_balance',
+            SQLERRM,
+            SQLSTATE,
+            p_user_id,
+            jsonb_build_object('amount', p_amount)
+        );
+        RAISE;
+    END;
+END;
+$$ LANGUAGE plpgsql;
+
 CREATE OR REPLACE PROCEDURE transfer_mypay_balance(
     p_sender_id INTEGER,
-    p_receiver_id INTEGER, 
-    p_amount NUMERIC(10,2)
+    p_receiver_id INTEGER,
+    p_amount NUMERIC(10,2),
+    OUT p_new_balance NUMERIC(10,2)
 ) AS $$
-DECLARE
-    v_sender_balance NUMERIC(10,2);
-    v_transaction_id INTEGER;
 BEGIN
-    -- Validate amount is positive
+    -- Validate amount
     IF p_amount <= 0 THEN
         RAISE EXCEPTION 'Transfer amount must be positive';
     END IF;
 
-    -- Check if users exist
-    IF NOT EXISTS (SELECT 1 FROM "TR_USER" WHERE id = p_sender_id) OR
-       NOT EXISTS (SELECT 1 FROM "TR_USER" WHERE id = p_receiver_id) THEN
-        RAISE EXCEPTION 'Invalid sender or receiver ID';
+    -- Check sufficient balance
+    IF NOT EXISTS (
+        SELECT 1 FROM "TR_MYPAY_BALANCE"
+        WHERE userid = p_sender_id AND balance >= p_amount
+    ) THEN
+        RAISE EXCEPTION 'Insufficient balance';
     END IF;
 
-    -- Get sender's current balance
-    SELECT balance INTO v_sender_balance 
-    FROM "TR_MYPAY_BALANCE"
-    WHERE userid = p_sender_id
-    FOR UPDATE;
-
-    IF v_sender_balance < p_amount THEN
-        RAISE EXCEPTION 'Insufficient balance. Current balance: %', v_sender_balance;
-    END IF;
-
-    -- Begin transaction
     BEGIN
-        -- Deduct from sender
+        -- Update sender balance
         UPDATE "TR_MYPAY_BALANCE"
         SET balance = balance - p_amount
-        WHERE userid = p_sender_id;
+        WHERE userid = p_sender_id
+        RETURNING balance INTO p_new_balance;
 
-        -- Add to receiver
+        -- Update receiver balance
         UPDATE "TR_MYPAY_BALANCE"
         SET balance = balance + p_amount
         WHERE userid = p_receiver_id;
@@ -111,48 +164,27 @@ BEGIN
             p_amount,
             'TRANSFER',
             CURRENT_TIMESTAMP
-        ) RETURNING id INTO v_transaction_id;
+        );
 
-        -- Commit happens automatically if no errors
-    EXCEPTION
-        WHEN OTHERS THEN
-            RAISE EXCEPTION 'Transfer failed: %', SQLERRM;
+    EXCEPTION WHEN OTHERS THEN
+        INSERT INTO "TR_ERROR_LOG" (
+            procedure_name,
+            error_message,
+            error_details,
+            user_id,
+            additional_data
+        ) VALUES (
+            'transfer_mypay_balance',
+            SQLERRM,
+            SQLSTATE,
+            p_sender_id,
+            jsonb_build_object(
+                'receiver_id', p_receiver_id,
+                'amount', p_amount
+            )
+        );
+        RAISE;
     END;
-
-    RAISE NOTICE 'Transfer successful. Transaction ID: %', v_transaction_id;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE PROCEDURE topup_mypay_balance(
-    p_user_id INTEGER,
-    p_amount NUMERIC(10,2),
-    OUT p_new_balance NUMERIC(10,2)
-) AS $$
-BEGIN
-    -- Validate amount
-    IF p_amount <= 0 THEN
-        RAISE EXCEPTION 'Top-up amount must be positive';
-    END IF;
-
-    -- Update balance
-    UPDATE "TR_MYPAY_BALANCE"
-    SET balance = balance + p_amount
-    WHERE userid = p_user_id
-    RETURNING balance INTO p_new_balance;
-
-    -- Log transaction
-    INSERT INTO "TR_MYPAY_TRANSACTION" (
-        sender_id,
-        receiver_id,
-        amount,
-        transaction_type,
-        transaction_date
-    ) VALUES (
-        p_user_id,
-        p_user_id,
-        p_amount,
-        'TOPUP',
-        CURRENT_TIMESTAMP
-    );
-END;
-$$ LANGUAGE plpgsql;
