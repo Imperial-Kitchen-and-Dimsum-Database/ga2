@@ -108,10 +108,11 @@
                             <div class="flex-1">
                                 <select onchange="updateAmount(this.value)" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="billType">
                                     <option value="" disabled selected>Select Service Session</option>
-                                    <option value="100">Session 1 ($100)</option>
-                                    <option value="200">Session 2 ($200)</option>
-                                    <option value="300">Session 3 ($300)</option>
-                                    <option value="400">Session 4 ($400)</option>
+                                    {% for order in unpaid_orders %}
+                                    <option value="{{ order.price }}">{{ order.service_name }} (${{ order.price }})</option>
+                                    {% empty %}
+                                    <option value="" disabled>No unpaid orders</option>
+                                    {% endfor %}
                                 </select>
                             </div>
                             <div class="flex-1">
@@ -201,8 +202,10 @@
                                     <option value="" disabled selected>Select Bank</option>
                                     <option value="bca">BCA</option>
                                     <option value="mandiri">Mandiri</option>
+                                    <option value="va_mandiri">Virtual Account Mandiri</option>
                                     <option value="bni">BNI</option>
                                     <option value="bri">BRI</option>
+                                    <option value="cimb">CIMB</option>
                                 </select>
                             </div>
                             <div class="flex-1">

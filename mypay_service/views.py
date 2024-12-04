@@ -276,3 +276,86 @@ def topup_balance(request):
             'success': False,
             'message': f"Top-up failed: {str(e)}"
         }, status=500)
+
+@csrf_exempt 
+@require_http_methods(["POST"])
+def withdraw_balance(request):
+    try:
+        if not request.body:
+            return JsonResponse({'success': False, 'message': 'Empty request body'}, status=400)
+
+        data = json.loads(request.body.decode('utf-8'))
+        phone = request.session.get('phone_number') or request.COOKIES.get('phone_number')
+        
+        if not phone:
+            raise ValueError("User not authenticated")
+
+        bank_name = data.get('bank_name')
+        account_number = data.get('account_number')
+        amount = float(data.get('amount', 0))
+
+        if not all([bank_name, account_number]):
+            raise ValueError("Bank details are required")
+        if amount <= 0:
+            raise ValueError("Withdrawal amount must be positive")
+
+        with transaction.atomic():
+            with connection.cursor() as cursor:
+                # Get user data and check if worker
+                cursor.execute("""
+                    SELECT u.id, u.mypaybalance, EXISTS(
+                        SELECT 1 FROM "WORKER" w WHERE w.id = u.id
+                    ) as is_worker
+                    FROM "USER" u WHERE u.phonenum = %s
+                """, [phone])
+                user_data = cursor.fetchone()
+                
+                if not user_data:
+                    raise ValueError("User not found")
+                    
+                user_id, current_balance, is_worker = user_data
+                
+                if not is_worker:
+                    raise ValueError("Only workers can withdraw funds")
+                if current_balance < amount:
+                    raise ValueError("Insufficient balance")
+
+                # Update user balance
+                cursor.execute("""
+                    UPDATE "USER" SET mypaybalance = mypaybalance - %s 
+                    WHERE id = %s
+                    RETURNING mypaybalance
+                """, [amount, user_id])
+                new_balance = cursor.fetchone()[0]
+
+                # Get withdrawal category ID
+                cursor.execute("""
+                    SELECT id FROM "TR_MYPAY_CATEGORY" 
+                    WHERE name = 'Withdrawal MyPay to bank account'
+                """)
+                category_id = cursor.fetchone()[0]
+
+                # Record transaction
+                cursor.execute("""
+                    INSERT INTO "TR_MYPAY" (id, userid, categoryid, nominal, date)
+                    VALUES (%s, %s, %s::uuid, %s, CURRENT_TIMESTAMP)
+                """, [uuid.uuid4(), user_id, category_id, -amount])
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Withdrawal successful',
+            'new_balance': float(new_balance)
+        })
+
+    except ValueError as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=400)
+    except Exception as e:
+        logger.error(f"Withdrawal error: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'message': f"Withdrawal failed: {str(e)}"
+        }, status=500)
+    
