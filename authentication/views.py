@@ -37,6 +37,7 @@ def login_user(request):
 
             if user:
                 user_id = user[0] 
+                print(f"user id: {user_id}")
 
                 # Determine the user's role
                 user_role = None
@@ -63,6 +64,7 @@ def login_user(request):
                     response.set_cookie('phone_number', phone_number)
                     response.set_cookie('user_role', user_role)  # Set user role cookie
                     response.set_cookie('last_login', str(datetime.datetime.now()))
+                    response.set_cookie('user_id', user_id)
                     return response
                 else:
                     messages.append('Unable to determine user role.')

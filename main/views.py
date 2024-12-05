@@ -45,7 +45,10 @@ def service(request):
     return render(request, "service_details.html")
 
 def subcategory_page(request, subcategory_id):
-    user_id = request.user.id  
+    user_id = request.COOKIES.get('user_id')
+    user_role = request.COOKIES.get('user_role')
+    print(f"user id: {user_id}")
+
     with connection.cursor() as cursor:
         cursor.execute("""
             SELECT ss.SubcategoryName, ss.Description, sc.CategoryName, sc.Id AS ServiceCategoryId
@@ -91,13 +94,33 @@ def subcategory_page(request, subcategory_id):
             for row in cursor.fetchall()
         ]
 
-        cursor.execute("""
-            SELECT 1 FROM "WORKER_SERVICE_CATEGORY" 
-            WHERE WorkerId = %s AND ServiceCategoryId = (
-                SELECT ServiceCategoryId FROM "SERVICE_SUBCATEGORY" WHERE Id = %s
-            )
-        """, [user_id, subcategory_id])
-        has_joined = cursor.fetchone() is not None
+        has_joined = False  
+        if user_role == 'worker': 
+            # First, fetch the ServiceCategoryId
+            cursor.execute("""
+                SELECT ServiceCategoryId 
+                FROM "SERVICE_SUBCATEGORY" 
+                WHERE Id = %s
+            """, [subcategory_id])
+            service_category = cursor.fetchone()
+
+            if service_category:
+                service_category_id = service_category[0]
+                print(f"ServiceCategoryId: {service_category_id}, id: {user_id}")  # Debug output
+
+                # Then check if the worker has joined this category
+                cursor.execute("""
+                    SELECT 1
+                    FROM "WORKER_SERVICE_CATEGORY"
+                    WHERE WorkerId = %s AND ServiceCategoryId = %s
+                """, [user_id, service_category_id])
+                has_joined = bool(cursor.fetchone())
+            else:
+                print(f"No ServiceCategoryId found for SubcategoryId: {subcategory_id}")
+
+        print(f"Has joined: {has_joined}")
+
+
 
         cursor.execute("""
             SELECT Id, Name
@@ -114,6 +137,7 @@ def subcategory_page(request, subcategory_id):
         'workers': workers,
         'has_joined': has_joined,
         'payment_methods': payment_methods,  
+        'user_role': user_role,
     }
 
     return render(request, 'subcategory_page.html', context)
