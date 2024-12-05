@@ -96,7 +96,6 @@ def subcategory_page(request, subcategory_id):
 
         has_joined = False  
         if user_role == 'worker': 
-            # First, fetch the ServiceCategoryId
             cursor.execute("""
                 SELECT ServiceCategoryId 
                 FROM "SERVICE_SUBCATEGORY" 
@@ -106,20 +105,16 @@ def subcategory_page(request, subcategory_id):
 
             if service_category:
                 service_category_id = service_category[0]
-                print(f"ServiceCategoryId: {service_category_id}, id: {user_id}")  # Debug output
+                print(f"ServiceCategoryId: {service_category_id}, id: {user_id}") 
 
-                # Then check if the worker has joined this category
                 cursor.execute("""
                     SELECT 1
                     FROM "WORKER_SERVICE_CATEGORY"
                     WHERE WorkerId = %s AND ServiceCategoryId = %s
                 """, [user_id, service_category_id])
                 has_joined = bool(cursor.fetchone())
-            else:
-                print(f"No ServiceCategoryId found for SubcategoryId: {subcategory_id}")
 
         print(f"Has joined: {has_joined}")
-
 
 
         cursor.execute("""
@@ -192,39 +187,47 @@ def worker_status(request):
 
 @login_required
 def user_service_bookings(request):
-    user_id = request.user.id  
+    user_id = request.COOKIES.get('user_id')  # Using cookie for user ID
     with connection.cursor() as cursor:
         cursor.execute("""
-            SELECT tso.Id, tso.orderDate, tso.serviceDate, tso.serviceTime, 
-                   tso.TotalPrice, tso.discountCode, pm.Name AS paymentMethod,
-                   ss.Session, ss.Price, sc.CategoryName
+            SELECT tso.Id, 
+                   tso.orderDate, 
+                   tso.TotalPrice, 
+                   ssc.SubcategoryName, 
+                   ss.Session, 
+                   os.Status AS order_status
             FROM "TR_SERVICE_ORDER" tso
-            LEFT JOIN "PAYMENT_METHOD" pm ON tso.paymentMethodId = pm.Id
             LEFT JOIN "SERVICE_SESSION" ss ON tso.serviceCategoryId = ss.SubcategoryId AND tso.Session = ss.Session
-            LEFT JOIN "SERVICE_CATEGORY" sc ON sc.Id = tso.serviceCategoryId
+            LEFT JOIN "SERVICE_SUBCATEGORY" ssc ON ss.SubcategoryId = ssc.Id
+            LEFT JOIN "TR_ORDER_STATUS" tos ON tos.serviceTrId = tso.Id
+            LEFT JOIN "ORDER_STATUS" os ON tos.statusId = os.Id
             WHERE tso.customerId = %s
-            ORDER BY tso.orderDate DESC
+            ORDER BY tso.orderDate DESC;
         """, [user_id])
 
         orders = [
             {
-                'id': row[0],
+                'order_id': row[0],
                 'order_date': row[1],
-                'service_date': row[2],
-                'service_time': row[3],
-                'total_price': row[4],
-                'discount_code': row[5],
-                'payment_method': row[6],
-                'session': row[7],
-                'price': row[8],
-                'category_name': row[9],
+                'total_payment': row[2],
+                'subcategory_name': row[3],
+                'session': row[4],  
+                'order_status': row[5],
             }
             for row in cursor.fetchall()
         ]
 
+    subcategories = sorted({order['subcategory_name'] for order in orders if order['subcategory_name']})
+    statuses = sorted({order['order_status'] for order in orders if order['order_status']})
+
     return render(request, "user_service_bookings.html", {
-        'orders': orders
+        'orders': orders,
+        'subcategories': subcategories,
+        'statuses': statuses,
     })
+
+
+
 
 
 

@@ -21,36 +21,29 @@
                         class="p-3 border border-[#F3ACAF] rounded-md w-full focus:ring-2 focus:ring-[#F3ACAF] focus:outline-none">
                 </div>
 
-                <div>
-                    <select 
-                        id="subcategory-select" 
-                        class="p-3 border border-[#F3ACAF] rounded-md focus:ring-2 focus:ring-[#F3ACAF] focus:outline-none">
-                        <option value="">All Subcategories</option>
-                        {% for subcategory in subcategories %}
-                        <option value="{{ subcategory }}">{{ subcategory }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div>
-                    <select 
-                        id="status-select" 
-                        class="p-3 border border-[#F3ACAF] rounded-md focus:ring-2 focus:ring-[#F3ACAF] focus:outline-none">
-                        <option value="">All Statuses</option>
-                        {% for status in status_options %}
-                        <option value="{{ status }}">{{ status }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
+                <select id="subcategory-select" class="p-3 border border-[#F3ACAF] rounded-md focus:ring-2 focus:ring-[#F3ACAF] focus:outline-none">
+                    <option value="">All Subcategories</option>
+                    {% for subcategory in subcategories %}
+                    <option value="{{ subcategory|lower }}">{{ subcategory }}</option>
+                    {% endfor %}
+                </select>
+                
+                <select id="status-select" class="p-3 border border-[#F3ACAF] rounded-md focus:ring-2 focus:ring-[#F3ACAF] focus:outline-none">
+                    <option value="">All Statuses</option>
+                    {% for status in statuses %}
+                    <option value="{{ status|lower }}">{{ status }}</option>
+                    {% endfor %}
+                </select>                
+                
             </form>
         </div>
 
         <div id="booking-container">
             {% for order in orders %}
             <div class="bg-white p-4 rounded-lg shadow-md mb-4 border-l-4 {% if order.order_status == 'Order Completed' %}border-[#F3ACAF]{% else %}border-gray-300{% endif %} booking-item" 
-                data-subcategory="{{ order.subcategory }}" 
-                data-status="{{ order.order_status }}" 
-                data-name="{{ order.service_name|lower }}" 
+                data-subcategory="{{ order.subcategory_name|lower }}" 
+                data-status="{{ order.order_status|lower }}" 
+                data-name="session {{ order.session }} - {{ order.subcategory_name|lower }}"
                 data-id="{{ order.order_id|lower }}">
                 <div class="flex justify-between items-center">
                     <div class="w-1/6 text-center">
@@ -59,7 +52,7 @@
                     </div>
                     <div class="w-1/6 text-center">
                         <p class="text-gray-500 font-semibold">Service Name</p>
-                        <p class="text-gray-700">{{ order.service_name }}</p>
+                        <p class="text-gray-700">Session {{ order.session }} - {{ order.subcategory_name }}</p>
                     </div>
                     <div class="w-1/6 text-center">
                         <p class="text-gray-500 font-semibold">Price</p>
@@ -76,7 +69,7 @@
                         </p>
                     </div>
                     <div class="w-1/6 text-center flex flex-col items-center justify-center gap-2">
-                        {% if order.order_status == 'Order Completed' and not order.testimonial_created %}
+                        {% if order.order_status == 'Order Completed' or order.order_status == 'Give your worker a rating!' and not order.testimonial_created %}
                         <button 
                             onclick="openModal('{{ order.order_id }}')" 
                             class="px-2 py-2 bg-[#F3ACAF] text-white font-semibold rounded-md shadow hover:bg-[#e9989b] hover:text-black min-w-[100px]">
@@ -157,8 +150,8 @@
 
     function filterBookings() {
         const searchQuery = searchInput.value.toLowerCase();
-        const selectedSubcategory = subcategorySelect.value;
-        const selectedStatus = statusSelect.value;
+        const selectedSubcategory = subcategorySelect.value.toLowerCase();
+        const selectedStatus = statusSelect.value.toLowerCase();
 
         document.querySelectorAll('.booking-item').forEach(item => {
             const name = item.getAttribute('data-name');
@@ -173,6 +166,7 @@
             item.style.display = matchesSearch && matchesSubcategory && matchesStatus ? 'block' : 'none';
         });
     }
+
 
     function openModal(orderId) {
         modal.classList.remove('hidden');

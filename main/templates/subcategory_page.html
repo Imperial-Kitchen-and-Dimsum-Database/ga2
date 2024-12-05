@@ -38,6 +38,7 @@
                                     <span class="font-medium">${{ session.price }}</span>
                                 </p>
                             </div>
+                            {% if user_role == "appuser" %}
                             <button 
                                 class="bg-yellow-400 hover:bg-yellow-500 text-black font-semibold py-2 px-4 rounded-full mt-8 transition-colors" 
                                 data-bs-toggle="modal" 
@@ -46,6 +47,7 @@
                                 data-session-price="{{ session.price }}">
                                 Book Now
                             </button>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
