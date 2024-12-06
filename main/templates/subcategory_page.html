@@ -96,6 +96,13 @@
                     <p class="text-gray-600 text-sm">- {{ testi.name }}</p>
                     <p class="text-yellow-500 text-sm">Rating: {{ testi.rating }}/10</p>
                     <p class="font-medium text-gray-900">"{{ testi.date }}"</p>
+                    <p class="text-gray-600 text-sm">{{ testi.user_id }}</p>
+                    <p class="text-gray-600 text-sm">{{ user_id }}</p>
+                    {% if testi.user_id == user_id %}
+                    <form>
+                        <a href=" {% url 'main:delete_testimonial' testi.testi_serv_id %} " class="text-red-500">Delete</a>
+                    </form>
+                    {% endif %}
                 </div>
                 {% empty %}
                 <p class="text-gray-400">No testimonials available for this subcategory.</p>

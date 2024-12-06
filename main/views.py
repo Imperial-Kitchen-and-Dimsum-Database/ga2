@@ -9,6 +9,7 @@ import json
 from uuid import uuid4
 import datetime
 import random
+from django.contrib import messages
 
 def login_required(view_func=None, login_url='authentication:login'):
     def decorator(func):
@@ -214,7 +215,7 @@ def subcategory_page(request, subcategory_id):
         payment_methods = [{'id': row[0], 'name': row[1]} for row in cursor.fetchall()]
 
         cursor.execute("""
-            SELECT name, date, text, rating
+            SELECT name, date, text, rating, U.id, servicetrid
             FROM "TESTIMONI" T
             JOIN "TR_SERVICE_ORDER" S ON T."servicetrid" = S."id"
             JOIN "USER" U ON S."customerid" = U."id"
@@ -224,15 +225,15 @@ def subcategory_page(request, subcategory_id):
 
 
         testimonials = []
-            
         for row in cursor.fetchall():
             testimonials.append({
             'name': row[0],
             'date': row[1],
             'text': row[2],
             'rating': row[3],
+            'user_id': str(row[4]),
+            'testi_serv_id': str(row[5]),
             })
-
 
 
     context = {
@@ -247,6 +248,7 @@ def subcategory_page(request, subcategory_id):
         'payment_methods': payment_methods,
         'user_role': user_role,
         'testimonials': testimonials,
+        'user_id': str(user_id)
     }
 
     return render(request, 'subcategory_page.html', context)
@@ -426,6 +428,7 @@ def view_testimonial_form(request, service_id):
     return render(request, 'testimonial_form.html', {'service_id': service_id})
 
 @csrf_exempt
+@login_required
 def submit_testimonial(request):
     if request.method == "POST":
         service_id = request.POST.get('service_id')
@@ -442,3 +445,34 @@ def submit_testimonial(request):
 
 
         return redirect('main:user_service_bookings')
+
+
+@csrf_exempt
+@login_required
+def delete_testimonial(request, testi_serv_id):
+    user_id = request.COOKIES.get('user_id')
+
+    with connection.cursor() as cursor:
+        cursor.execute("""
+            SELECT *
+            FROM "TESTIMONI" T
+            JOIN "TR_SERVICE_ORDER" S ON T."servicetrid" = S."id"
+            JOIN "USER" U ON S."customerid" = U."id"
+            WHERE "servicetrid" = %s
+        """, [testi_serv_id])
+        row = cursor.fetchone()
+
+        if row and str(row[4]) == user_id:
+            print(row)
+            print(row[4])
+            print(user_id)
+        #     cursor.execute("""
+        #         DELETE FROM "TESTIMONI" WHERE id = %s
+        #     """, [testi_serv_id])
+        #     messages.success(request, "Testimonial deleted successfully.")
+
+        #     return redirect('main:user_service_bookings')
+        # else:
+        #     messages.error(request, "Invalid request method.")
+        #     return redirect('main:user_service_bookings')
+    return (request, 'failure.html')
