@@ -6,6 +6,7 @@ from django.core.paginator import Paginator
 from django.shortcuts import render
 from django.db import connection
 
+
 def vouchers(request):
     # Fetch vouchers
     with connection.cursor() as cursor:
@@ -38,11 +39,10 @@ def vouchers(request):
     promos_list = []
     for row in promos:
         promos_list.append({
-            'code': row[0],
             'date': row[1],
-            'min_transaction': row[3],
+            'code': row[0],
             'discount': row[2],
-
+            'min_transaction': row[3],
         })
 
     # Paginate vouchers
@@ -50,7 +50,6 @@ def vouchers(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
-    # Pass both vouchers and promos to the template
     return render(request, 'vouchers.html', {'page_obj': page_obj, 'promos_list': promos_list})
 
 # def purchase_voucher(request, voucher_id):
