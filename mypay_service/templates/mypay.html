@@ -109,7 +109,9 @@
                                 <select onchange="updateAmount(this.value)" class="shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="billType">
                                     <option value="" disabled selected>Select Service Session</option>
                                     {% for order in unpaid_orders %}
-                                    <option value="{{ order.price }}">{{ order.service_name }} (${{ order.price }})</option>
+                                    <option value="{{ order.price }}" data-order-id="{{ order.id }}">
+                                        {{ order.service_name }} - ${{ order.price|floatformat:2 }} ({{ order.dateservice|date:"M d, Y" }})
+                                    </option>
                                     {% empty %}
                                     <option value="" disabled>No unpaid orders</option>
                                     {% endfor %}
@@ -340,11 +342,65 @@
         }
 
         // Handle form submission
-        document.getElementById('payButton').addEventListener('click', function(e) {
+        document.getElementById('payButton').addEventListener('click', async function(e) {
             e.preventDefault();
-            // Add your payment processing logic here
-            alert('Payment processed!');
-            closePayBillsModal();
+            
+            const select = document.getElementById('billType');
+            const selectedOption = select.options[select.selectedIndex];
+            const orderId = selectedOption.getAttribute('data-order-id');
+            const amount = parseFloat(document.getElementById('amount').value);
+
+            // Debug logs
+            console.log('Selected option:', selectedOption);
+            console.log('Order ID:', orderId);
+            console.log('Amount:', amount);
+
+            if (!orderId || !amount) {
+                alert('Please select a service to pay');
+                return;
+            }
+
+            try {
+                // Get CSRF token
+                const csrftoken = getCookie('csrftoken');
+                console.log('CSRF Token:', csrftoken); // Debug log
+
+                // Log the request payload
+                const payload = {
+                    order_id: orderId,
+                    amount: amount
+                };
+                console.log('Sending request with payload:', payload);
+
+                const response = await fetch('/mypay/pay_service/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (data.success) {
+                    alert('Payment successful!');
+                    closePayBillsModal();
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Payment failed');
+                }
+            } catch (error) {
+                console.error('Payment error:', error);
+                alert('Payment failed: ' + error.message);
+            }
         });
 
         function updateAmount(value) {
@@ -415,9 +471,18 @@
 
         // Helper function to get CSRF token
         function getCookie(name) {
-            const value = `; ${document.cookie}`;
-            const parts = value.split(`; ${name}=`);
-            if (parts.length === 2) return parts.pop().split(';').shift();
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
         }
 
         document.getElementById('sendButton').addEventListener('click', async function(e) {
@@ -439,7 +504,6 @@
             
         });
 
-        // Add these new functions to your existing JavaScript
         function openWithdrawModal() {
             document.getElementById('withdrawModal').classList.remove('hidden');
             document.getElementById('bankName').selectedIndex = 0;

@@ -61,6 +61,14 @@ def mypay_dashboard(request):
             transactions.append(transaction)
         
         cursor.execute("""
+            WITH LatestStatus AS (
+                SELECT 
+                    serviceTrId,
+                    statusId,
+                    date,
+                    ROW_NUMBER() OVER (PARTITION BY serviceTrId ORDER BY date DESC) as rn
+                FROM "TR_ORDER_STATUS"
+            )
             SELECT 
                 tso.Id as id,
                 ssc.SubcategoryName as service_name,
@@ -71,9 +79,9 @@ def mypay_dashboard(request):
             LEFT JOIN "SERVICE_SESSION" ss ON tso.serviceCategoryId = ss.SubcategoryId 
                 AND tso.Session = ss.Session
             LEFT JOIN "SERVICE_SUBCATEGORY" ssc ON ss.SubcategoryId = ssc.Id
-            LEFT JOIN "TR_ORDER_STATUS" tos ON tos.serviceTrId = tso.Id
-            LEFT JOIN "ORDER_STATUS" os ON tos.statusId = os.Id
             LEFT JOIN "WORKER" w ON tso.workerId = w.Id
+            JOIN LatestStatus ls ON tso.Id = ls.serviceTrId AND ls.rn = 1
+            JOIN "ORDER_STATUS" os ON ls.statusId = os.id
             WHERE tso.customerId = %s 
             AND os.Status = 'Waiting for Payment'
             ORDER BY tso.orderDate DESC
@@ -390,69 +398,115 @@ def withdraw_balance(request):
 @require_POST
 def pay_service(request):
     try:
-        data = json.loads(request.body)
+        if not request.body:
+            return JsonResponse({'success': False, 'message': 'Empty request body'}, status=400)
+
+        data = json.loads(request.body.decode('utf-8'))
+        phone = request.session.get('phone_number') or request.COOKIES.get('phone_number')
+        
+        logger.debug(f"Processing payment request for phone: {phone}")
+        
+        if not phone:
+            raise ValueError("User not authenticated")
+
         order_id = data.get('order_id')
         amount = float(data.get('amount', 0))
 
-        phone_number = request.session.get('phone_number') or request.COOKIES.get('phone_number')
-        
+        if not order_id:
+            raise ValueError("Order ID is required")
+        if amount <= 0:
+            raise ValueError("Payment amount must be positive")
+
         with transaction.atomic():
             with connection.cursor() as cursor:
-                # Get user data
+                # Get user data and check balance
                 cursor.execute("""
-                    SELECT id, mypaybalance FROM "USER" WHERE phonenum = %s
-                """, [phone_number])
+                    SELECT id, mypaybalance 
+                    FROM "USER" 
+                    WHERE phonenum = %s
+                """, [phone])
                 user_data = cursor.fetchone()
+                
                 if not user_data:
+                    logger.error(f"User not found for phone: {phone}")
                     raise ValueError("User not found")
+                    
                 user_id, current_balance = user_data
-
+                logger.debug(f"User found: {user_id}, balance: {current_balance}")
+                
                 if current_balance < amount:
                     raise ValueError("Insufficient balance")
 
-                # Get order details
+                # Get order details and verify
                 cursor.execute("""
-                    SELECT workerId, TotalPrice FROM "TR_SERVICE_ORDER" WHERE Id = %s
+                    SELECT so.customerId, so.workerId, so.totalPrice 
+                    FROM "TR_SERVICE_ORDER" so
+                    JOIN "TR_ORDER_STATUS" tos ON so.id = tos.serviceTrId
+                    JOIN "ORDER_STATUS" os ON tos.statusId = os.id
+                    WHERE so.id = %s AND os.status = 'Waiting for Payment'
                 """, [order_id])
                 order_data = cursor.fetchone()
+                
                 if not order_data:
-                    raise ValueError("Order not found")
-                worker_id, total_price = order_data
+                    logger.error(f"Order not found or not in waiting status: {order_id}")
+                    raise ValueError("Order not found or already paid")
+                
+                customer_id, worker_id, total_price = order_data
+                
+                if customer_id != user_id:
+                    raise ValueError("Unauthorized to pay this order")
+                if float(total_price) != amount:
+                    raise ValueError("Payment amount does not match order total")
 
                 # Update user balance
                 cursor.execute("""
-                    UPDATE "USER" SET mypaybalance = mypaybalance - %s WHERE id = %s
+                    UPDATE "USER" 
+                    SET mypaybalance = mypaybalance - %s 
+                    WHERE id = %s
                 """, [amount, user_id])
 
                 # Update worker balance
                 cursor.execute("""
-                    UPDATE "USER" SET mypaybalance = mypaybalance + %s WHERE id = %s
+                    UPDATE "USER" 
+                    SET mypaybalance = mypaybalance + %s 
+                    WHERE id = %s
                 """, [amount, worker_id])
 
-                # Update order status to Completed
+                # Get payment category ID
                 cursor.execute("""
-                    UPDATE "TR_ORDER_STATUS" 
-                    SET statusId = (SELECT Id FROM "ORDER_STATUS" WHERE Status = 'Completed')
-                    WHERE serviceTrId = %s
-                """, [order_id])
+                    SELECT id FROM "TR_MYPAY_CATEGORY" 
+                    WHERE name = 'Pay for service transaction'
+                """)
+                category_data = cursor.fetchone()
+                if not category_data:
+                    raise ValueError("Payment category not found")
+                category_id = category_data[0]
 
                 # Record transactions
-                cursor.execute("""
-                    SELECT id FROM "TR_MYPAY_CATEGORY" WHERE name = 'Service Payment'
-                """)
-                category_id = cursor.fetchone()[0]
-
-                # Record customer payment
+                payment_id = uuid.uuid4()
                 cursor.execute("""
                     INSERT INTO "TR_MYPAY" (id, userid, categoryid, nominal, date)
                     VALUES (%s, %s, %s::uuid, %s, CURRENT_TIMESTAMP)
-                """, [uuid.uuid4(), user_id, category_id, -amount])
-
-                # Record worker payment
+                """, [payment_id, user_id, category_id, -amount])
+                
                 cursor.execute("""
                     INSERT INTO "TR_MYPAY" (id, userid, categoryid, nominal, date)
                     VALUES (%s, %s, %s::uuid, %s, CURRENT_TIMESTAMP)
                 """, [uuid.uuid4(), worker_id, category_id, amount])
+
+                # Get paid status ID
+                cursor.execute("""
+                    SELECT id FROM "ORDER_STATUS" WHERE status = 'Order Completed'
+                """)
+                status_data = cursor.fetchone()
+                if not status_data:
+                    raise ValueError("Paid status not found")
+
+                # Update order status to paid
+                cursor.execute("""
+                    INSERT INTO "TR_ORDER_STATUS" (servicetrid, statusid, date)
+                    VALUES (%s, %s, CURRENT_TIMESTAMP)
+                """, [order_id, status_data[0]])
 
         return JsonResponse({
             'success': True,
@@ -460,14 +514,15 @@ def pay_service(request):
         })
 
     except ValueError as e:
+        logger.error(f"Validation error: {str(e)}")
         return JsonResponse({
             'success': False,
             'message': str(e)
         }, status=400)
     except Exception as e:
         logger.error(f"Payment error: {str(e)}")
+        logger.error(traceback.format_exc())
         return JsonResponse({
             'success': False,
             'message': f"Payment failed: {str(e)}"
         }, status=500)
-
