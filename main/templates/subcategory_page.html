@@ -92,9 +92,10 @@
             <div class="bg-white rounded-lg p-4">
                 {% for testi in testimonials %}
                 <div class="mb-4">
-                    <p class="font-medium text-gray-900">"{{ testi.text }}"</p>
-                    <p class="text-gray-600 text-sm">- {{ testi.customer_name }}</p>
-                    <p class="text-yellow-500 text-sm">Rating: {{ testi.rating }}/10</p>
+                    <p class="font-medium text-right text-gray-900">"{{ testi.text }}"</p>
+                    <p class="text-gray-600 text-sm">- {{ testi.name }}</p>
+                    <p class="text-yellow-500 text-sm">Rating: {{ testi.rating }}/5</p>
+                    <p class="font-medium text-gray-900">"{{ testi.date }}"</p>
                 </div>
                 {% empty %}
                 <p class="text-gray-400">No testimonials available for this subcategory.</p>

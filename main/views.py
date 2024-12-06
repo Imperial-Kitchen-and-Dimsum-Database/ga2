@@ -203,6 +203,28 @@ def subcategory_page(request, subcategory_id):
         """)
         payment_methods = [{'id': row[0], 'name': row[1]} for row in cursor.fetchall()]
 
+        cursor.execute("""
+            SELECT name, date, text, rating
+            FROM "TESTIMONI" T
+            JOIN "TR_SERVICE_ORDER" S ON T."servicetrid" = S."id"
+            JOIN "USER" U ON S."customerid" = U."id"
+            WHERE "servicecategoryid" = '85ab91e1-daa5-4c4f-b4ba-e1bde1979b87'
+
+        """, [subcategory_id])
+
+
+        testimonials = []
+            
+        for row in cursor.fetchall():
+            testimonials.append({
+            'name': row[0],
+            'date': row[1],
+            'text': row[2],
+            'rating': row[3],
+            })
+
+
+
     context = {
         'subcategory_id': subcategory_id,
         'subcategory_name': subcategory[0],
@@ -214,6 +236,7 @@ def subcategory_page(request, subcategory_id):
         'has_joined': has_joined,
         'payment_methods': payment_methods,
         'user_role': user_role,
+        'testimonials': testimonials,
     }
 
     return render(request, 'subcategory_page.html', context)

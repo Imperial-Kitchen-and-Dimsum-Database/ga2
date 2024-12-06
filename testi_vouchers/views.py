@@ -118,7 +118,16 @@ def purchase_voucher(request):
             else:
                 return render(request, 'failure.html')
 
-
+# def view_testimonials(request, service_id):
+#     with connection.cursor() as cursor:
+#         cursor.execute("""
+#             SELECT t.rating, t.comment, u.name 
+#             FROM testimonials t 
+#             JOIN users u ON t.user_id = u.id 
+#             WHERE t.service_id = %s
+#         """, [service_id])
+#         testimonials = cursor.fetchall()
+#     return render(request, 'view_testimonials.html', {'testimonials': testimonials})
 
 
 # @csrf_exempt
@@ -138,13 +147,4 @@ def purchase_voucher(request):
 #         return JsonResponse({'message': 'Testimonial added successfully'})
 #     return JsonResponse({'error': 'Invalid request'}, status=400)
 
-# def view_testimonials(request, service_id):
-#     with connection.cursor() as cursor:
-#         cursor.execute("""
-#             SELECT t.rating, t.comment, u.name 
-#             FROM testimonials t 
-#             JOIN users u ON t.user_id = u.id 
-#             WHERE t.service_id = %s
-#         """, [service_id])
-#         testimonials = cursor.fetchall()
-#     return render(request, 'view_testimonials.html', {'testimonials': testimonials})
+
