@@ -64,7 +64,7 @@
                     </div>
                     <div class="w-1/6 text-center">
                         <p class="text-gray-500 font-semibold">Status</p>
-                        <p class="{% if order.order_status == 'Order Completed' %}text-[#F3ACAF]{% else %}text-gray-700{% endif %}">
+                        <p class="{% if order.order_status == 'Order Completed' %}text-[#F3ACAF]{% elif order.order_status == 'Order Cancelled' %}text-red-500{% elif order.order_status == 'Order Completed' %}text-[#F3ACAF]{% else %}text-gray-700{% endif %}">
                             {{ order.order_status }}
                         </p>
                     </div>
@@ -204,7 +204,7 @@
             .then(data => {
                 if (data.success) {
                     alert(data.message);
-                    document.querySelector(`[data-id="${orderId.toLowerCase()}"]`).remove();
+                    location.reload();
                 } else {
                     alert('Failed to cancel order: ' + data.message);
                 }
@@ -215,6 +215,7 @@
             });
         }
     }
+
 </script>
 
 {% endblock content %}

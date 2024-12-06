@@ -371,27 +371,23 @@ def worker_profile(request, worker_id):
 @login_required
 def cancel_order(request):
     if request.method == 'POST':
-        try:
-            body = json.loads(request.body)
-            order_id = body.get('order_id')
-            user_id = request.COOKIES.get('user_id')  
+        body = json.loads(request.body)
+        order_id = body.get('order_id')
 
-            with connection.cursor() as cursor:
-                cursor.execute("""
-                    SELECT 1
-                    FROM "TR_SERVICE_ORDER"
-                    WHERE Id = %s AND customerId = %s
-                """, [order_id, user_id])
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT Id
+                FROM "ORDER_STATUS"
+                WHERE Status = 'Order Cancelled'
+            """)
+            cancelled_status_id = cursor.fetchone()
 
-                cursor.execute("""
-                    DELETE FROM "TR_SERVICE_ORDER"
-                    WHERE Id = %s
-                """, [order_id])
+            cursor.execute("""
+                INSERT INTO "TR_ORDER_STATUS" (serviceTrId, statusId, date)
+                VALUES (%s, %s, CURRENT_TIMESTAMP)
+            """, [order_id, cancelled_status_id[0]])
 
-            return JsonResponse({'success': True, 'message': 'Order cancelled successfully.'})
-        except Exception as e:
-            return JsonResponse({'success': False, 'message': f'Error: {str(e)}'}, status=500)
+        return JsonResponse({'success': True, 'message': 'Order cancelled.'})
 
-    return JsonResponse({'success': False, 'message': 'Invalid request method.'}, status=405)
 
 
