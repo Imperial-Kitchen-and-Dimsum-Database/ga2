@@ -89,10 +89,20 @@ def subcategory_page(request, subcategory_id):
                 order_date = request.POST.get("order_date")  
 
                 session_number = int(session_name.split(" ")[1])  
-
                 parsed_order_date = datetime.datetime.strptime(order_date, "%d/%m/%Y")
 
+                
+
                 with connection.cursor() as cursor:
+
+                    cursor.execute("""
+                    SELECT discount FROM "PROMO" NATURAL JOIN "DISCOUNT" 
+                    WHERE "code" = %s
+                                   """,[discount_code])
+                    discount = cursor.fetchone()[0]
+                    total_payment = float(total_payment) - int(discount)
+
+
                     cursor.execute("""
                         INSERT INTO "TR_SERVICE_ORDER" (
                             Id, orderDate, serviceDate, serviceTime, 
@@ -208,7 +218,7 @@ def subcategory_page(request, subcategory_id):
             FROM "TESTIMONI" T
             JOIN "TR_SERVICE_ORDER" S ON T."servicetrid" = S."id"
             JOIN "USER" U ON S."customerid" = U."id"
-            WHERE "servicecategoryid" = '85ab91e1-daa5-4c4f-b4ba-e1bde1979b87'
+            WHERE "servicecategoryid" = %s
 
         """, [subcategory_id])
 
