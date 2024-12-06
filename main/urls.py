@@ -1,5 +1,5 @@
 from django.urls import path, include
-from main.views import show_main, service, subcategory_page, status, worker_status, user_service_bookings, worker_profile
+from main.views import show_main, service, subcategory_page, status, worker_status, user_service_bookings, worker_profile, cancel_order
 
 app_name = 'main'
 
@@ -11,4 +11,5 @@ urlpatterns = [
     path('worker_status/', worker_status, name='worker_status'),
     path('user_service_bookings/', user_service_bookings, name='user_service_bookings'),
     path('worker/<uuid:worker_id>/', worker_profile, name='worker_profile'),
+    path('cancel-order/', cancel_order, name='cancel_order'),
 ]

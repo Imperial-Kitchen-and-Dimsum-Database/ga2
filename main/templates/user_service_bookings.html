@@ -75,9 +75,7 @@
                             class="px-2 py-2 bg-[#F3ACAF] text-white font-semibold rounded-md shadow hover:bg-[#e9989b] hover:text-black min-w-[100px]">
                             Create Testimonial
                         </button>
-                        {% endif %}
-                        
-                        {% if order.order_status == 'Waiting for Payment' or order.order_status == 'Searching for Nearest Workers' %}
+                        {% else %}
                         <button 
                             onclick="cancelOrder('{{ order.order_id }}')" 
                             class="px-2 py-2 border-2 border-[#F3ACAF] text-[#F3ACAF] font-semibold rounded-md shadow hover:bg-[#FBE0E1] hover:text-[#e9989b] min-w-[100px]">
@@ -190,6 +188,32 @@
     searchInput.addEventListener('input', filterBookings);
     subcategorySelect.addEventListener('change', filterBookings);
     statusSelect.addEventListener('change', filterBookings);
+
+    function cancelOrder(orderId) {
+        if (confirm('Are you sure you want to cancel this order?')) {
+            fetch('{% url "main:cancel_order" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: JSON.stringify({ order_id: orderId }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    document.querySelector(`[data-id="${orderId.toLowerCase()}"]`).remove();
+                } else {
+                    alert('Failed to cancel order: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while canceling the order.');
+            });
+        }
+    }
 </script>
 
 {% endblock content %}

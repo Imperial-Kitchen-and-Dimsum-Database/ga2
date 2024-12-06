@@ -4,6 +4,10 @@ from django.shortcuts import redirect
 from django.db import connection
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+import json
+from uuid import uuid4
+import datetime
 
 def login_required(view_func=None, login_url='authentication:login'):
     def decorator(func):
@@ -47,8 +51,64 @@ def service(request):
 def subcategory_page(request, subcategory_id):
     user_id = request.COOKIES.get('user_id')
     user_role = request.COOKIES.get('user_role')
-    print(f"user id: {user_id}")
+    has_joined = False
 
+    if request.method == "POST":
+        try:
+            # Process booking form submission
+            session_name = request.POST.get("service_name")
+            total_payment = request.POST.get("total_payment")
+            discount_code = request.POST.get("discount_code") or None
+            payment_method_id = request.POST.get("payment_method")
+            order_date = request.POST.get("order_date")  # Date provided by the form
+
+            # Extract session number from the session name
+            session_number = int(session_name.split(" ")[1])  # Assuming "Session X"
+
+            # Convert order_date to a datetime object
+            parsed_order_date = datetime.datetime.strptime(order_date, "%d/%m/%Y")
+
+            # Insert into the TR_SERVICE_ORDER table
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    INSERT INTO "TR_SERVICE_ORDER" (
+                        Id, orderDate, serviceDate, serviceTime, 
+                        TotalPrice, customerId, serviceCategoryId, Session, 
+                        discountCode, paymentMethodId
+                    )
+                    VALUES (
+                        %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                    )
+                """, [
+                    str(uuid4()),  # Generate a new UUID for the order ID
+                    parsed_order_date,
+                    parsed_order_date,  # For now, serviceDate is the same as orderDate
+                    parsed_order_date,  # For now, serviceTime is the current time
+                    total_payment,
+                    user_id,
+                    subcategory_id,
+                    session_number,
+                    discount_code,
+                    payment_method_id,
+                ])
+            return redirect("main:user_service_bookings")
+
+        except Exception as e:
+            print(f"Error: {e}")
+            return render(request, "subcategory_page.html", {
+                'subcategory_name': subcategory[0],
+                'description': subcategory[1],
+                'category_name': subcategory[2],
+                'service_category_id': subcategory[3],
+                'sessions': sessions,
+                'workers': workers,
+                'has_joined': has_joined,
+                'payment_methods': payment_methods,
+                'user_role': user_role,
+                'error': 'Failed to book the service. Please try again.'
+            })
+
+    # Fetch subcategory, sessions, workers, etc., for GET request
     with connection.cursor() as cursor:
         cursor.execute("""
             SELECT ss.SubcategoryName, ss.Description, sc.CategoryName, sc.Id AS ServiceCategoryId
@@ -94,8 +154,8 @@ def subcategory_page(request, subcategory_id):
             for row in cursor.fetchall()
         ]
 
-        has_joined = False  
-        if user_role == 'worker': 
+        # Check if the worker has joined this service category
+        if user_role == 'worker':
             cursor.execute("""
                 SELECT ServiceCategoryId 
                 FROM "SERVICE_SUBCATEGORY" 
@@ -116,7 +176,6 @@ def subcategory_page(request, subcategory_id):
 
         print(f"Has joined: {has_joined}")
 
-
         cursor.execute("""
             SELECT Id, Name
             FROM "PAYMENT_METHOD"
@@ -124,6 +183,7 @@ def subcategory_page(request, subcategory_id):
         payment_methods = [{'id': row[0], 'name': row[1]} for row in cursor.fetchall()]
 
     context = {
+        'subcategory_id': subcategory_id,
         'subcategory_name': subcategory[0],
         'description': subcategory[1],
         'category_name': subcategory[2],
@@ -131,11 +191,13 @@ def subcategory_page(request, subcategory_id):
         'sessions': sessions,
         'workers': workers,
         'has_joined': has_joined,
-        'payment_methods': payment_methods,  
+        'payment_methods': payment_methods,
         'user_role': user_role,
     }
 
     return render(request, 'subcategory_page.html', context)
+
+
 
 
 def status(request):
@@ -187,7 +249,7 @@ def worker_status(request):
 
 @login_required
 def user_service_bookings(request):
-    user_id = request.COOKIES.get('user_id')  # Using cookie for user ID
+    user_id = request.COOKIES.get('user_id') 
     with connection.cursor() as cursor:
         cursor.execute("""
             SELECT tso.Id, 
@@ -195,7 +257,12 @@ def user_service_bookings(request):
                    tso.TotalPrice, 
                    ssc.SubcategoryName, 
                    ss.Session, 
-                   os.Status AS order_status
+                   os.Status AS order_status,
+                   EXISTS (
+                       SELECT 1
+                       FROM "TESTIMONI" t
+                       WHERE t.serviceTrId = tso.Id
+                   ) AS testimonial_created
             FROM "TR_SERVICE_ORDER" tso
             LEFT JOIN "SERVICE_SESSION" ss ON tso.serviceCategoryId = ss.SubcategoryId AND tso.Session = ss.Session
             LEFT JOIN "SERVICE_SUBCATEGORY" ssc ON ss.SubcategoryId = ssc.Id
@@ -211,8 +278,9 @@ def user_service_bookings(request):
                 'order_date': row[1],
                 'total_payment': row[2],
                 'subcategory_name': row[3],
-                'session': row[4],  
+                'session': row[4],
                 'order_status': row[5],
+                'testimonial_created': row[6], 
             }
             for row in cursor.fetchall()
         ]
@@ -225,11 +293,6 @@ def user_service_bookings(request):
         'subcategories': subcategories,
         'statuses': statuses,
     })
-
-
-
-
-
 
 def worker_profile(request, worker_id):
     with connection.cursor() as cursor:
@@ -262,4 +325,33 @@ def worker_profile(request, worker_id):
     }
 
     return render(request, 'worker_profile.html', {'worker': worker_data})
+
+
+@csrf_exempt
+@login_required
+def cancel_order(request):
+    if request.method == 'POST':
+        try:
+            body = json.loads(request.body)
+            order_id = body.get('order_id')
+            user_id = request.COOKIES.get('user_id')  
+
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT 1
+                    FROM "TR_SERVICE_ORDER"
+                    WHERE Id = %s AND customerId = %s
+                """, [order_id, user_id])
+
+                cursor.execute("""
+                    DELETE FROM "TR_SERVICE_ORDER"
+                    WHERE Id = %s
+                """, [order_id])
+
+            return JsonResponse({'success': True, 'message': 'Order cancelled successfully.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': f'Error: {str(e)}'}, status=500)
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method.'}, status=405)
+
 
