@@ -59,11 +59,38 @@ def mypay_dashboard(request):
             transaction['date'] = transaction['date'].strftime('%Y-%m-%d')
             transaction['amount'] = f"${transaction['amount']:,.2f}"
             transactions.append(transaction)
+        
+        cursor.execute("""
+            SELECT 
+                tso.Id as id,
+                ssc.SubcategoryName as service_name,
+                tso.TotalPrice as price,
+                tso.orderDate as dateservice,
+                w.Id as worker_id
+            FROM "TR_SERVICE_ORDER" tso
+            LEFT JOIN "SERVICE_SESSION" ss ON tso.serviceCategoryId = ss.SubcategoryId 
+                AND tso.Session = ss.Session
+            LEFT JOIN "SERVICE_SUBCATEGORY" ssc ON ss.SubcategoryId = ssc.Id
+            LEFT JOIN "TR_ORDER_STATUS" tos ON tos.serviceTrId = tso.Id
+            LEFT JOIN "ORDER_STATUS" os ON tos.statusId = os.Id
+            LEFT JOIN "WORKER" w ON tso.workerId = w.Id
+            WHERE tso.customerId = %s 
+            AND os.Status = 'Waiting for Payment'
+            ORDER BY tso.orderDate DESC
+        """, [user_id])
+        
+        columns = [col[0] for col in cursor.description]
+        unpaid_orders = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        
+        # Debug logging
+        logger.debug(f"Unpaid orders found: {len(unpaid_orders)}")
+        logger.debug(f"User ID: {user_id}")
             
     context = {
         'transactions': transactions,
         'current_balance': current_balance,
         'is_worker': is_worker,  # Add this to context
+        'unpaid_orders': unpaid_orders,  # Add unpaid orders to context
     }
     return render(request, 'mypay.html', context)
 
@@ -358,4 +385,89 @@ def withdraw_balance(request):
             'success': False,
             'message': f"Withdrawal failed: {str(e)}"
         }, status=500)
-    
+
+@csrf_exempt
+@require_POST
+def pay_service(request):
+    try:
+        data = json.loads(request.body)
+        order_id = data.get('order_id')
+        amount = float(data.get('amount', 0))
+
+        phone_number = request.session.get('phone_number') or request.COOKIES.get('phone_number')
+        
+        with transaction.atomic():
+            with connection.cursor() as cursor:
+                # Get user data
+                cursor.execute("""
+                    SELECT id, mypaybalance FROM "USER" WHERE phonenum = %s
+                """, [phone_number])
+                user_data = cursor.fetchone()
+                if not user_data:
+                    raise ValueError("User not found")
+                user_id, current_balance = user_data
+
+                if current_balance < amount:
+                    raise ValueError("Insufficient balance")
+
+                # Get order details
+                cursor.execute("""
+                    SELECT workerId, TotalPrice FROM "TR_SERVICE_ORDER" WHERE Id = %s
+                """, [order_id])
+                order_data = cursor.fetchone()
+                if not order_data:
+                    raise ValueError("Order not found")
+                worker_id, total_price = order_data
+
+                # Update user balance
+                cursor.execute("""
+                    UPDATE "USER" SET mypaybalance = mypaybalance - %s WHERE id = %s
+                """, [amount, user_id])
+
+                # Update worker balance
+                cursor.execute("""
+                    UPDATE "USER" SET mypaybalance = mypaybalance + %s WHERE id = %s
+                """, [amount, worker_id])
+
+                # Update order status to Completed
+                cursor.execute("""
+                    UPDATE "TR_ORDER_STATUS" 
+                    SET statusId = (SELECT Id FROM "ORDER_STATUS" WHERE Status = 'Completed')
+                    WHERE serviceTrId = %s
+                """, [order_id])
+
+                # Record transactions
+                cursor.execute("""
+                    SELECT id FROM "TR_MYPAY_CATEGORY" WHERE name = 'Service Payment'
+                """)
+                category_id = cursor.fetchone()[0]
+
+                # Record customer payment
+                cursor.execute("""
+                    INSERT INTO "TR_MYPAY" (id, userid, categoryid, nominal, date)
+                    VALUES (%s, %s, %s::uuid, %s, CURRENT_TIMESTAMP)
+                """, [uuid.uuid4(), user_id, category_id, -amount])
+
+                # Record worker payment
+                cursor.execute("""
+                    INSERT INTO "TR_MYPAY" (id, userid, categoryid, nominal, date)
+                    VALUES (%s, %s, %s::uuid, %s, CURRENT_TIMESTAMP)
+                """, [uuid.uuid4(), worker_id, category_id, amount])
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Payment successful'
+        })
+
+    except ValueError as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=400)
+    except Exception as e:
+        logger.error(f"Payment error: {str(e)}")
+        return JsonResponse({
+            'success': False,
+            'message': f"Payment failed: {str(e)}"
+        }, status=500)
+
