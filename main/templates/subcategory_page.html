@@ -72,12 +72,17 @@
                     </a>
                     {% endfor %}
                 </div>
-                {% if not has_joined %}
+                {% if user_role == 'worker' and not has_joined %}
                 <div class="text-center mt-6">
-                    <button
-                        class="bg-[#FFB74C] hover:bg-[#e9989b] text-black font-bold py-2 px-6 rounded-full transition-colors">
-                        Join Us As A Worker!
-                    </button>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <input type="hidden" name="join_worker" value="true">
+                        <input type="hidden" name="service_category_id" value="{{ service_category_id }}">
+                        <button
+                            class="bg-[#FFB74C] hover:bg-[#e9989b] text-black font-bold py-2 px-6 rounded-full transition-colors">
+                            Join Us As A Worker!
+                        </button>
+                    </form>
                 </div>
                 {% endif %}
             </div>   
@@ -112,6 +117,7 @@
                 <form id="bookServiceForm" method="POST" action="{% url 'main:subcategory' subcategory_id %}">
                     {% csrf_token %}
                     
+                    <input type="hidden" name="book_service" value="true">
                     <input type="hidden" name="subcategory_id" value="{{ service_category_id }}"> 
                     <input type="hidden" name="service_name" id="serviceName" value=""> <!-- Session Name -->
                     <input type="hidden" name="total_payment" id="totalPaymentHidden" value=""> <!-- Total Payment -->

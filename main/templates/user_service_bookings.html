@@ -69,13 +69,14 @@
                         </p>
                     </div>
                     <div class="w-1/6 text-center flex flex-col items-center justify-center gap-2">
-                        {% if order.order_status == 'Order Completed' or order.order_status == 'Give your worker a rating!' and not order.testimonial_created %}
+                        {% if order.order_status == 'Order Completed' and not order.testimonial_created %}
                         <button 
                             onclick="openModal('{{ order.order_id }}')" 
                             class="px-2 py-2 bg-[#F3ACAF] text-white font-semibold rounded-md shadow hover:bg-[#e9989b] hover:text-black min-w-[100px]">
                             Create Testimonial
                         </button>
-                        {% else %}
+                        {% endif %}
+                        {% if order.order_status == 'Waiting for Payment' or order.order_status == 'Looking for Nearby Worker' %}
                         <button 
                             onclick="cancelOrder('{{ order.order_id }}')" 
                             class="px-2 py-2 border-2 border-[#F3ACAF] text-[#F3ACAF] font-semibold rounded-md shadow hover:bg-[#FBE0E1] hover:text-[#e9989b] min-w-[100px]">
