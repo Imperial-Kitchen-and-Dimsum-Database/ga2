@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %} 
+{% block content %}
+
+
+<div style="background: linear-gradient(180deg, #FFF196 0%, #FFB74C 50%, #FFA5A5 100%);" class="min-h-screen flex items-center justify-center w-screen bg-gray-100">
+    <div class="max-w-md w-full bg-white py-6 px-10 rounded-2xl shadow-lg">
+
+        <form method="POST" action="{% url 'main:submit_testimonial' %}">
+            {% csrf_token %}
+            <div class="bg-[#F3ACAF]  max-w-md w-full py-6 px-10 rounded-2xl shadow-lg text-center">
+                <h2 class="text-lg font-bold text-white">Submit Your Testimonial</h2>
+            </div>
+            <div class="p-6 space-y-4">
+                <!-- Hidden Inputs -->
+                <input type="hidden" name="service_id" value="{{ service_id }}">
+                <input type="hidden" name="sub_category_id" value="{{ sub_category.id }}">
+
+                <!-- Rating Input -->
+                <div>
+                    <label for="rating" class="block text-black font-semibold mb-2">Rating (1-10)</label>
+                    <input 
+                        type="number" 
+                        id="rating" 
+                        name="rating"
+                        min="1" 
+                        max="10" 
+                        required
+                        class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F3ACAF]"
+                        placeholder="Enter your rating (1-10)">
+                </div>
+
+                <!-- Comment Input -->
+                <div>
+                    <label for="comment" class="block text-black font-semibold mb-2">Comment</label>
+                    <textarea 
+                        id="comment" 
+                        name="comment"
+                        rows="4" 
+                        required
+                        class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#F3ACAF]"
+                        placeholder="Write your comment here..."></textarea>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-end p-4 space-x-4">
+                <button 
+                    type="button" 
+                    onclick="window.history.back()" 
+                    class="bg-gray-300 px-4 py-2 text-black font-semibold rounded-md hover:bg-gray-400">
+                    Cancel
+                </button>
+                <button 
+                    type="submit" 
+                    class="bg-[#F3ACAF] px-4 py-2 text-white font-semibold rounded-md hover:bg-[#e9989b]">
+                    Submit
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+{% endblock %}

@@ -100,7 +100,7 @@ def subcategory_page(request, subcategory_id):
                     WHERE "code" = %s
                                    """,[discount_code])
                     discount = cursor.fetchone()[0]
-                    total_payment = float(total_payment) - int(discount)
+                    total_payment = float(total_payment) - float(discount)
 
 
                     cursor.execute("""
@@ -422,5 +422,23 @@ def cancel_order(request):
 
         return JsonResponse({'success': True, 'message': 'Order cancelled.'})
 
+def view_testimonial_form(request, service_id):
+    return render(request, 'testimonial_form.html', {'service_id': service_id})
+
+@csrf_exempt
+def submit_testimonial(request):
+    if request.method == "POST":
+        service_id = request.POST.get('service_id')
+        rating = request.POST.get('rating')
+        comment = request.POST.get('comment')
+        date = datetime.datetime.now()
+
+        print(f"Service ID: {service_id}, Rating: {rating}, Comment: {comment} , Data: {date}")
+        with connection.cursor() as cursor:
+                cursor.execute("""
+                    INSERT INTO "TESTIMONI" (servicetrid, date, text, rating)
+                    VALUES (%s, %s, %s,%s)
+                """, [service_id, date, comment, rating])
 
 
+        return redirect('main:user_service_bookings')
