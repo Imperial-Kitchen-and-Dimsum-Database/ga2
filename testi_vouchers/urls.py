@@ -5,4 +5,5 @@ app_name = 'testi_vouchers'
 
 urlpatterns = [
     path('vouchers/', vouchers, name='vouchers'),
+    
 ]

@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
 {% load static %}
-
 {% block content %}
 {% include 'navbar.html' %}
 
@@ -11,6 +10,42 @@
 
 <h1 class="text-5xl font-semibold text-center text-gray-800 dark:text-white">Vouchers</h1>
 
+
+<div class="container mx-auto p-6">
+    <div id="voucher-container" class="bg-white shadow-lg rounded-lg p-6 mb-6">
+      <div id="voucher-cards" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {% for voucher in page_obj %}
+            {% include 'voucher_card.html' with voucher=voucher %}
+        {% endfor %}
+    </div>
+    </div>
+    
+    <div id="pagination" class="flex justify-center mt-4">
+        {% if page_obj.has_previous %}
+            <a href="?page=1" class="px-2 py-1 bg-gray-200 rounded">First</a>
+            <a href="?page={{ page_obj.previous_page_number }}" class="px-2 py-1 bg-gray-200 rounded">Previous</a>
+        {% endif %}
+
+        <span class="mx-2">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}" class="px-2 py-1 bg-gray-200 rounded">Next</a>
+            <a href="?page={{ page_obj.paginator.num_pages }}" class="px-2 py-1 bg-gray-200 rounded">Last</a>
+        {% endif %}
+    </div>
+
+    <div class="p-6 bg-white">
+      <div class="flex flex-row space-x-4">
+          {% include 'promo_card.html' %}
+          {% include 'promo_card.html' %}
+          {% include 'promo_card.html' %}
+      </div>
+  </div>
+</div>
+
+
+
+<!-- 
 <div class="container mx-auto p-6">
     <div id="voucher-container" class="bg-white shadow-lg rounded-lg p-6 mb-6">
         <div id="voucher-cards" class="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -51,17 +86,12 @@
               </li>
             </ul>
           </nav>
-    </div>
+    </div> -->
 
 
 
    
-      
-      
-    <div class="space-y-6 mb-14 p-6 bg-white">
-    {% include 'promo_page.html' %}
-</div>
-</div>
+     
 
 {% include 'footer.html' %}
 {% endblock content %}

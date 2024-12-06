@@ -1,75 +1,30 @@
-<link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
-<style>
-    .voucher-card {
-        position: relative;
-        border-radius: 1rem;
-        padding: 1.5rem;
-        overflow: hidden;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        width: 20rem;
-        height: 20rem;
-    }
 
-    .voucher-card::before,
-    .voucher-card::after {
-        content: '';
-        position: absolute;
-        width: 1.5rem;
-        height: 1.5rem;
-        background-color: white;
-        border-radius: 50%;
-        top: 50%;
-        transform: translateY(-50%);
-    }
-
-    .voucher-card::before {
-        left: -0.75rem;
-    }
-
-    .voucher-card::after {
-        right: -0.75rem;
-    }
-
-    .buy-now-button {
-        position: absolute;
-        bottom: 1rem;
-        right: 1rem;
-    }
-
-    /* Modal Styles */
-    .modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.5);
-        justify-content: center;
-        align-items: center;
-    }
-
-    .modal-content {
-        background: white;
-        padding: 2rem;
-        border-radius: 0.5rem;
-        max-width: 400px;
-        width: 100%;
-    }
-</style>
-
-<!-- Card 1 -->
 <div class="flex justify-center w-full py-8">
     <div class="voucher-card relative bg-purple-300 rounded-2xl text-white">
         <div class="p-4">
-            <h2 class="text-2xl font-bold text-center">30% Off all Home Cleaning</h2>
-            <p class="text-center mt-1 font-semibold">Discount Code: <span class="font-mono text-base bg-gray-900 px-2 py-1 rounded">AISLE30</span></p>
-            <p class="text-center mt-1 text-sm">Minimum Transaction: Rp.350,000</p>
-            <p class="text-center mt-1 text-sm">Valid for: 7 days</p>
-            <p class="text-center mt-1 text-sm">User Quota: 50 users</p>
-            <p class="text-center mt-1 text-sm">Price: Rp.45,000</p>
+            <h2 class="text-2xl font-bold text-center text-black">
+                {{ voucher.discount_percentage }}% OFF ALL {{ voucher.service_name }}
+            </h2>
+            <p class="text-center mt-1 font-semibold">
+                Discount Code:
+                <span class="font-mono text-base bg-gray-900 px-2 py-1 rounded">
+                    {{ voucher.voucher_code }}
+                </span>
+            </p>
+            <p class="text-center mt-1 text-sm">
+                Minimum Transaction: Rp.{{ voucher.minimum_transaction }}
+            </p>
+            <p class="text-center mt-1 text-sm">
+                Valid for: {{ voucher.valid_days }} days
+            </p>
+            <p class="text-center mt-1 text-sm">
+                User Quota: {{ voucher.user_quota }} users
+            </p>
+            <p class="text-center mt-1 text-sm">
+                Price: Rp.{{ voucher.price }}
+            </p>
         </div>
-        <div class="buy-now-button">
+        <div class="buy-now-button justify-center">
             <button onclick="showSuccessModal()" class="bg-white text-black font-bold py-1.5 px-3 rounded-lg shadow-lg hover:bg-gray-100 text-sm">
                 Buy Now
             </button>
@@ -77,67 +32,39 @@
     </div>
 </div>
 
-<!-- Card 2 -->
-<div class="flex justify-center w-full py-8">
-    <div class="voucher-card relative bg-purple-300 rounded-2xl text-white">
-        <div class="p-4">
-            <h2 class="text-2xl font-bold text-center">40% Off all Kitchen Cleaning</h2>
-            <p class="text-center mt-1 font-semibold">Discount Code: <span class="font-mono text-base bg-gray-900 px-2 py-1 rounded">JKT20CLEAN</span></p>
-            <p class="text-center mt-1 text-sm">Minimum Transaction: Rp.200,000</p>
-            <p class="text-center mt-1 text-sm">Valid for: 14 days</p>
-            <p class="text-center mt-1 text-sm">User Quota: 20 users</p>
-            <p class="text-center mt-1 text-sm">Price: Rp.50,000</p>
-        </div>
-        <div class="buy-now-button">
-            <button onclick="showFailureModal()" class="bg-white text-black font-bold py-1.5 px-3 rounded-lg shadow-lg hover:bg-gray-100 text-sm">
-                Buy Now
-            </button>
-        </div>
-    </div>
-</div>
 
-<!-- Card 1 -->
-<div class="flex justify-center w-full py-8">
-    <div class="voucher-card relative bg-purple-300 rounded-2xl text-white">
-        <div class="p-4">
-            <h2 class="text-2xl font-bold text-center">30% Off all Home Cleaning</h2>
-            <p class="text-center mt-1 font-semibold">Discount Code: <span class="font-mono text-base bg-gray-900 px-2 py-1 rounded">AISLE30</span></p>
-            <p class="text-center mt-1 text-sm">Minimum Transaction: Rp.350,000</p>
-            <p class="text-center mt-1 text-sm">Valid for: 7 days</p>
-            <p class="text-center mt-1 text-sm">User Quota: 50 users</p>
-            <p class="text-center mt-1 text-sm">Price: Rp.45,000</p>
-        </div>
-        <div class="buy-now-button">
-            <button onclick="showSuccessModal()" class="bg-white text-black font-bold py-1.5 px-3 rounded-lg shadow-lg hover:bg-gray-100 text-sm">
-                Buy Now
-            </button>
-        </div>
-    </div>
-</div>
+
 
 <script>
+    // Function to create a success modal
     function showSuccessModal() {
         const modal = document.createElement('div');
         modal.className = 'modal flex';
         modal.id = 'dynamicModal';
-        
-        const voucherCode = 'AISLE30';
+
+        const voucherCode = 'AISLE30'; // Example voucher code
         const validUntil = new Date();
-        validUntil.setDate(validUntil.getDate() + 7);
+        validUntil.setDate(validUntil.getDate() + 7); // Set valid period to 7 days
         const formattedDate = validUntil.toLocaleDateString();
 
         modal.innerHTML = `
             <div class="modal-content">
                 <h3 class="text-xl font-bold text-green-600 mb-4">SUCCESS</h3>
-                <p>Congratulations! You have successfully bought a voucher with the code ${voucherCode}. This voucher can be used until ${formattedDate} with a usage quota of 50.</p>
-                <button onclick="closeModal()" class="bg-green-500 text-white font-semibold py-2 px-4 rounded mt-4">Close</button>
+                <p class="text-gray-800">
+                    Congratulations! You have successfully bought a voucher with the code <span class="font-mono text-green-700 bg-green-100 px-2 py-1 rounded">${voucherCode}</span>. 
+                    This voucher can be used until <strong>${formattedDate}</strong> with a usage quota of <strong>50</strong>.
+                </p>
+                <button onclick="closeModal()" class="bg-green-500 text-white font-semibold py-2 px-4 rounded-lg mt-4 hover:bg-green-600 transition-all">
+                    Close
+                </button>
             </div>
         `;
-        
+
         document.body.appendChild(modal);
         modal.style.display = 'flex';
     }
 
+    // Function to create a failure modal
     function showFailureModal() {
         const modal = document.createElement('div');
         modal.className = 'modal flex';
@@ -146,8 +73,12 @@
         modal.innerHTML = `
             <div class="modal-content">
                 <h3 class="text-xl font-bold text-red-600 mb-4">FAILED</h3>
-                <p>Sorry, your balance is not enough to buy this voucher.</p>
-                <button onclick="closeModal()" class="bg-red-500 text-white font-semibold py-2 px-4 rounded mt-4">Close</button>
+                <p class="text-gray-800">
+                    Sorry, your balance is not enough to buy this voucher.
+                </p>
+                <button onclick="closeModal()" class="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg mt-4 hover:bg-red-600 transition-all">
+                    Close
+                </button>
             </div>
         `;
 
@@ -155,6 +86,7 @@
         modal.style.display = 'flex';
     }
 
+    // Function to close and remove the modal
     function closeModal() {
         const modal = document.getElementById('dynamicModal');
         if (modal) {
@@ -162,3 +94,116 @@
         }
     }
 </script>
+
+
+
+<style>
+.voucher-card {
+    position: relative;
+    border-radius: 1rem;
+    padding: 1.5rem;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    width: 20rem;
+    height: auto;
+    background: linear-gradient(to bottom right, #d6bcfa, #b794f4);
+}
+
+.voucher-card::before,
+.voucher-card::after {
+    content: '';
+    position: absolute;
+    width: 2rem;
+    height: 2rem;
+    background-color: #fff;
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+}
+
+.voucher-card::before {
+    left: -1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.voucher-card::after {
+    right: -1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.buy-now-button {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    z-index: 2;
+}
+
+.buy-now-button button {
+    background: linear-gradient(to right, #ffeb3b, #ff5722);
+    color: white;
+    font-weight: bold;
+    padding: 0.5rem 1rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+    transition: all 0.3s ease;
+}
+
+.buy-now-button button:hover {
+    background: linear-gradient(to right, #ff9800, #e91e63);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+}
+
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7); /* Dark transparent overlay */
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* Ensure the modal is above all other content */
+}
+
+.modal-content {
+    background: white;
+    padding: 2rem;
+    border-radius: 1rem;
+    max-width: 24rem;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    animation: fade-in 0.3s ease-in-out;
+}
+
+.modal-content h3 {
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.modal-content p {
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+button {
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+@keyframes fade-in {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+
+</style>
