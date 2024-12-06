@@ -35,11 +35,11 @@
     </div>
 
     <div class="p-6 bg-white">
-      <div class="flex flex-row space-x-4">
-          {% include 'promo_card.html' %}
-          {% include 'promo_card.html' %}
-          {% include 'promo_card.html' %}
-      </div>
+      <div class="grid grid-cols-3 gap-4">
+        {% for promo in promos_list %}
+            {% include 'promo_card.html' with promo=promo %}
+        {% endfor %}
+    </div>
   </div>
 </div>
 

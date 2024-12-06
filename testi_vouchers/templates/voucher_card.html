@@ -3,7 +3,7 @@
     <div class="voucher-card relative bg-purple-300 rounded-2xl text-white">
         <div class="p-4">
             <h2 class="text-2xl font-bold text-center text-black">
-                {{ voucher.discount_percentage }}% OFF ALL {{ voucher.service_name }}
+                {{ voucher.discount_percentage }} OFF ALL {{ voucher.service_name }}
             </h2>
             <p class="text-center mt-1 font-semibold">
                 Discount Code:
@@ -12,7 +12,7 @@
                 </span>
             </p>
             <p class="text-center mt-1 text-sm">
-                Minimum Transaction: Rp.{{ voucher.minimum_transaction }}
+                Minimum Transaction: {{ voucher.minimum_transaction }}
             </p>
             <p class="text-center mt-1 text-sm">
                 Valid for: {{ voucher.valid_days }} days
@@ -21,7 +21,7 @@
                 User Quota: {{ voucher.user_quota }} users
             </p>
             <p class="text-center mt-1 text-sm">
-                Price: Rp.{{ voucher.price }}
+                Price: {{ voucher.price }}
             </p>
         </div>
         <div class="buy-now-button justify-center">
@@ -140,7 +140,7 @@
 }
 
 .buy-now-button button {
-    background: linear-gradient(to right, #ffeb3b, #ff5722);
+    background: linear-gradient(to right, #7a22e7, #efb7f6);
     color: white;
     font-weight: bold;
     padding: 0.5rem 1rem;
@@ -150,7 +150,7 @@
 }
 
 .buy-now-button button:hover {
-    background: linear-gradient(to right, #ff9800, #e91e63);
+    background: linear-gradient(to right, #7a22e7, #efb7f6);
     box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
     transform: translateY(-2px);
 }
