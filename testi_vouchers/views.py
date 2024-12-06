@@ -1,4 +1,6 @@
-from django.shortcuts import render
+import datetime
+import uuid
+from django.shortcuts import redirect, render
 from django.db import connection
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
@@ -11,7 +13,6 @@ import json
 
 
 def voucher(request):
-    # Fetch vouchers
     with connection.cursor() as cursor:
         cursor.execute("""
             SELECT *
@@ -22,7 +23,7 @@ def voucher(request):
     vouchers_list = []
     for row in vouchers:
         vouchers_list.append({
-            'voucher_code': row[0],
+            'code': row[0],
             'discount_percentage': row[4],
             'service_name': "SERVICES",
             'minimum_transaction': row[5],
@@ -57,20 +58,67 @@ def voucher(request):
 
 
 
+
 @csrf_protect
-def purchase_voucher(request, voucher_id=None):
-    data = json.loads(request.body)
-    voucher_id = data.get('code')
-    user_id = request.session.get('user_id')
+def purchase_voucher(request):
+    user_id = request.COOKIES.get('user_id')
+    print(f"user id: {user_id}")
+
+    voucher_code = request.POST.get('code')
+    print(voucher_code)
 
     with connection.cursor() as cursor:
-        cursor.execute("""
-                        SELECT "mypaybalance" FROM "USER" WHERE "id" = %s
-                        """, [user_id])
-        balance_result = cursor.fetchone()
-        balance = balance_result[0]
+            
+            cursor.execute("""
+                SELECT "mypaybalance" FROM "USER" WHERE "id" = %s
+            """, [user_id])
+            balance = cursor.fetchone()[0]
+            print(f"Balance Result: {balance}")  
 
-    return render(request, 'purchase_voucher.html', {'voucher_id': voucher_id, 'balance': balance})
+            cursor.execute("""
+                SELECT * FROM "VOUCHER" WHERE "code" = %s
+            """, [voucher_code])
+            voucher = cursor.fetchone()
+            print(f"Voucher Result: {voucher}")
+
+            cursor.execute("""
+                SELECT "price" FROM "VOUCHER" WHERE "code" = %s
+            """, [voucher_code])
+            voucher_price = cursor.fetchone()[0]
+            print(f"Voucher Price: {voucher_price}")  
+
+
+            if balance >= voucher_price:
+                    
+                    new_balance = balance - voucher_price
+                    cursor.execute("""
+                    UPDATE "USER" SET "mypaybalance" = %s WHERE "id" = %s
+                    """, [new_balance, user_id])
+                    print(f"Balance Updated: {new_balance}")
+
+                    tr_pv_id = uuid.uuid4()
+                    mypay = '3ddee865-2af9-4188-b2f9-7d601a325ea9'
+                    purchase_date = datetime.datetime.now()
+                    expiration_date = purchase_date + datetime.timedelta(days=voucher[1])
+                    voucher_uses = voucher[2]
+
+                    cursor.execute("""  
+                    INSERT INTO "TR_VOUCHER_PAYMENT" VALUES (%s, %s, %s, %s, %s, %s, %s)
+                    """, [tr_pv_id, purchase_date, expiration_date, voucher_uses, user_id, voucher_code, mypay])
+
+                    context = {
+                        'voucher_code': voucher_code,
+                        'voucher_uses': voucher_uses,
+                        'valid_until': expiration_date,       
+                    }
+
+                    return render(request, 'success.html', context)
+                    # return render(request, 'success.html')
+            
+            else:
+                return render(request, 'failure.html')
+
+
 
 
 # @csrf_exempt

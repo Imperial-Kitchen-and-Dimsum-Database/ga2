@@ -8,7 +8,7 @@
             <p class="text-center mt-1 font-semibold">
                 Discount Code:
                 <span class="font-mono text-base bg-gray-900 px-2 py-1 rounded">
-                    {{ voucher.voucher_code }}
+                    {{ voucher.code }}
                 </span>
             </p>
             <p class="text-center mt-1 text-sm">
@@ -25,9 +25,13 @@
             </p>
         </div>
         <div class="buy-now-button justify-center">
-            <a href="{% url 'testi_vouchers:purchase_voucher' %}" class="bg-white text-black font-bold py-1.5 px-3 rounded-lg shadow-lg hover:bg-gray-100 text-sm">
-                Buy Now
-            </a> 
+            <form method="POST" action="{% url 'testi_vouchers:purchase_voucher' %}" class="inline">
+                {% csrf_token %}
+                <input type="hidden" name="code" value="{{ voucher.code }}">
+                <button type="submit" class="bg-white text-black font-bold py-1.5 px-3 rounded-lg shadow-lg hover:bg-gray-100 text-sm">
+                    Buy Now
+                </button>
+            </form>
         </div>
     </div>
 </div>
