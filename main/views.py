@@ -454,25 +454,20 @@ def delete_testimonial(request, testi_serv_id):
 
     with connection.cursor() as cursor:
         cursor.execute("""
-            SELECT *
+            SELECT servicetrid, date, text, rating
             FROM "TESTIMONI" T
             JOIN "TR_SERVICE_ORDER" S ON T."servicetrid" = S."id"
             JOIN "USER" U ON S."customerid" = U."id"
-            WHERE "servicetrid" = %s
-        """, [testi_serv_id])
+            WHERE "servicetrid" = %s AND U."id" = %s
+        """, [testi_serv_id, user_id])
         row = cursor.fetchone()
+        
+        testi_serv_id = row[0]
+        date = row[1]
+        text = row[2]
 
-        if row and str(row[4]) == user_id:
-            print(row)
-            print(row[4])
-            print(user_id)
-        #     cursor.execute("""
-        #         DELETE FROM "TESTIMONI" WHERE id = %s
-        #     """, [testi_serv_id])
-        #     messages.success(request, "Testimonial deleted successfully.")
+        cursor.execute("""
+            DELETE FROM "TESTIMONI" WHERE "servicetrid" = %s AND "date" = %s AND "text" = %s
+                       """, [testi_serv_id, date, text])
 
-        #     return redirect('main:user_service_bookings')
-        # else:
-        #     messages.error(request, "Invalid request method.")
-        #     return redirect('main:user_service_bookings')
-    return (request, 'failure.html')
+    return redirect('main:show_main')  
