@@ -2,7 +2,6 @@
 
 <div class="bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-500 hover:opacity-90 rounded-lg shadow-lg p-4 max-w-xs">
     <div class="flex flex-col items-center">
-        <h2 class="text-lg font-bold text-gray-800">EXCLUSIVE PROMO!</h2>
         <p class="text-2xl font-extrabold text-white mt-2">
             <span class="font-mono">{{ promo.code }}</span>
         </p>
@@ -13,7 +12,7 @@
             Discount: <span class="font-semibold">{{ promo.discount }}</span>
         </p>
         <p class="text-gray-800 mt-1 text-sm">
-            Minimum Transaction: <span class="font-semibold">Rp.{{ promo.min_transaction }}</span>
+            Minimum Transaction: <span class="font-semibold">{{ promo.min_transaction }}</span>
         </p>
     </div>
 </div>

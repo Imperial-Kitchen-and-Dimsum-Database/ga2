@@ -5,9 +5,12 @@ from django.http import JsonResponse
 from django.core.paginator import Paginator
 from django.shortcuts import render
 from django.db import connection
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_protect
+import json
 
 
-def vouchers(request):
+def voucher(request):
     # Fetch vouchers
     with connection.cursor() as cursor:
         cursor.execute("""
@@ -52,28 +55,23 @@ def vouchers(request):
 
     return render(request, 'vouchers.html', {'page_obj': page_obj, 'promos_list': promos_list})
 
-# def purchase_voucher(request, voucher_id):
-#     user_id = request.session.get('user_id')  # Assuming session stores user_id
-#     with connection.cursor() as cursor:
-#         # Check user MyPay balance
-#         cursor.execute('SELECT balance FROM mypay WHERE user_id = %s', [user_id])
-#         balance = cursor.fetchone()[0]
 
-#         # Get voucher details
-#         cursor.execute("SELECT id, code, discount_percentage FROM vouchers WHERE id = %s", [voucher_id])
-#         voucher = cursor.fetchone()
-#         if not voucher:
-#             return JsonResponse({'error': 'Voucher not found'}, status=404)
 
-#         # Validate balance and process purchase
-#         voucher_price = 100  # Example static price for vouchers
-#         if balance < voucher_price:
-#             return JsonResponse({'error': 'Insufficient balance'}, status=400)
-        
-#         cursor.execute("UPDATE mypay SET balance = balance - %s WHERE user_id = %s", [voucher_price, user_id])
-#         cursor.execute("INSERT INTO user_vouchers (user_id, voucher_id) VALUES (%s, %s)", [user_id, voucher_id])
+@csrf_protect
+def purchase_voucher(request, voucher_id=None):
+    data = json.loads(request.body)
+    voucher_id = data.get('code')
+    user_id = request.session.get('user_id')
 
-#     return JsonResponse({'message': 'Voucher purchased successfully'})
+    with connection.cursor() as cursor:
+        cursor.execute("""
+                        SELECT "mypaybalance" FROM "USER" WHERE "id" = %s
+                        """, [user_id])
+        balance_result = cursor.fetchone()
+        balance = balance_result[0]
+
+    return render(request, 'purchase_voucher.html', {'voucher_id': voucher_id, 'balance': balance})
+
 
 # @csrf_exempt
 # def add_testimonial(request):

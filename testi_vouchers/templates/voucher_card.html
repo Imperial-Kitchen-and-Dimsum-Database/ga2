@@ -25,9 +25,9 @@
             </p>
         </div>
         <div class="buy-now-button justify-center">
-            <button onclick="showSuccessModal()" class="bg-white text-black font-bold py-1.5 px-3 rounded-lg shadow-lg hover:bg-gray-100 text-sm">
+            <a href="{% url 'testi_vouchers:purchase_voucher' %}" class="bg-white text-black font-bold py-1.5 px-3 rounded-lg shadow-lg hover:bg-gray-100 text-sm">
                 Buy Now
-            </button>
+            </a> 
         </div>
     </div>
 </div>
@@ -35,65 +35,6 @@
 
 
 
-<script>
-    // Function to create a success modal
-    function showSuccessModal() {
-        const modal = document.createElement('div');
-        modal.className = 'modal flex';
-        modal.id = 'dynamicModal';
-
-        const voucherCode = 'AISLE30'; // Example voucher code
-        const validUntil = new Date();
-        validUntil.setDate(validUntil.getDate() + 7); // Set valid period to 7 days
-        const formattedDate = validUntil.toLocaleDateString();
-
-        modal.innerHTML = `
-            <div class="modal-content">
-                <h3 class="text-xl font-bold text-green-600 mb-4">SUCCESS</h3>
-                <p class="text-gray-800">
-                    Congratulations! You have successfully bought a voucher with the code <span class="font-mono text-green-700 bg-green-100 px-2 py-1 rounded">${voucherCode}</span>. 
-                    This voucher can be used until <strong>${formattedDate}</strong> with a usage quota of <strong>50</strong>.
-                </p>
-                <button onclick="closeModal()" class="bg-green-500 text-white font-semibold py-2 px-4 rounded-lg mt-4 hover:bg-green-600 transition-all">
-                    Close
-                </button>
-            </div>
-        `;
-
-        document.body.appendChild(modal);
-        modal.style.display = 'flex';
-    }
-
-    // Function to create a failure modal
-    function showFailureModal() {
-        const modal = document.createElement('div');
-        modal.className = 'modal flex';
-        modal.id = 'dynamicModal';
-
-        modal.innerHTML = `
-            <div class="modal-content">
-                <h3 class="text-xl font-bold text-red-600 mb-4">FAILED</h3>
-                <p class="text-gray-800">
-                    Sorry, your balance is not enough to buy this voucher.
-                </p>
-                <button onclick="closeModal()" class="bg-red-500 text-white font-semibold py-2 px-4 rounded-lg mt-4 hover:bg-red-600 transition-all">
-                    Close
-                </button>
-            </div>
-        `;
-
-        document.body.appendChild(modal);
-        modal.style.display = 'flex';
-    }
-
-    // Function to close and remove the modal
-    function closeModal() {
-        const modal = document.getElementById('dynamicModal');
-        if (modal) {
-            modal.remove();
-        }
-    }
-</script>
 
 
 
