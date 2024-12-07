@@ -108,10 +108,36 @@ def subcategory_page(request, subcategory_id):
                         
                         voucher_ribet = cursor.fetchone()
                         voucher_cut = voucher_ribet[4]
+                        voucher_valid = voucher_ribet[1]
+                        voucher_uses = voucher_ribet[2]
 
+
+
+                        expiration_date = datetime.datetime.now + datetime.timedelta(days=voucher_valid)
+
+
+
+                        # Check if the user has bought the voucher or not
+
+                        cursor.execute("""
+
+                            SELECT TVP.id, alreadyuse
+
+                            FROM "TR_VOUCHER_PAYMENT" TVP
+
+                            JOIN "VOUCHER" V ON V."code" = TVP."voucherid"
+
+                            JOIN "CUSTOMER" C ON C."id" = TVP."customerid"
+
+                            WHERE V."code" = %s AND P.user_id = %s
+
+                        """, [discount_code, user_id])
 
                         
-                        total_payment = float(total_payment) - float(voucher_cut)
+
+                        if cursor.fetchone():
+
+                            total_payment = float(total_payment) - float(voucher_cut)
 
 
 
