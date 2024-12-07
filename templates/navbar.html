@@ -4,7 +4,7 @@
         <div class="flex items-center space-x-4">
             <h1 class="text-xl md:text-2xl mb-1 font-bold text-black">Qlean</h1>
             <span class="md:inline-block text-sm md:text-base text-black font-medium">
-                Welcome, {{ user.user_type }} {{ user.name }}!
+                Welcome, {{ user.user_role }} {{ user.name }}!
             </span>
         </div>
 
@@ -15,6 +15,10 @@
 
             {% if request.COOKIES.user_role == 'appuser' %}
             <a href="{% url 'main:user_service_bookings' %}" class="text-sm md:text-base text-black font-semibold hover:text-gray-600 transition">My Order</a>
+            {% endif %}
+
+            {% if request.COOKIES.user_role == 'worker' %}
+            <a href="{% url 'main:worker_service_bookings' %}" class="text-sm md:text-base text-black font-semibold hover:text-gray-600 transition">My Jobs</a>
             {% endif %}
 
             <a href="{% url 'testi_vouchers:vouchers' %}" class="text-sm md:text-base text-black font-semibold hover:text-gray-600 transition">Discounts</a>
@@ -32,13 +36,16 @@
         </div>
     </div>
 
-    <!-- Mobile menu -->
     <div class="mobile-menu hidden md:hidden flex flex-col items-start space-y-2 w-full px-2 mt-2">
         <a href="{% url 'main:show_main' %}" class="block text-black text-sm font-semibold hover:text-gray-600 transition">Home</a>
         <a href="{% url 'mypay_service:mypay_dashboard' %}" class="block text-black text-sm font-semibold hover:text-gray-600 transition">MyPay</a>
 
         {% if user.user_type == 'appuser' %}
         <a href="{% url 'main:user_service_bookings' %}" class="block text-black text-sm font-semibold hover:text-gray-600 transition">My Order</a>
+        {% endif %}
+
+        {% if request.COOKIES.user_role == 'worker' %}
+        <a href="{% url 'main:worker_service_bookings' %}" class="block text-black text-sm font-semibold hover:text-gray-600 transition">My Jobs</a>
         {% endif %}
 
         <a href="{% url 'testi_vouchers:vouchers' %}" class="block text-black text-sm font-semibold hover:text-gray-600 transition">Discounts</a>

@@ -470,4 +470,104 @@ def delete_testimonial(request, testi_serv_id):
             DELETE FROM "TESTIMONI" WHERE "servicetrid" = %s AND "date" = %s AND "text" = %s
                        """, [testi_serv_id, date, text])
 
-    return redirect('main:show_main')  
+    return redirect('main:show_main')
+
+@login_required
+def worker_service_bookings(request):
+    try:
+        phone_number = request.session.get('phone_number') or request.COOKIES.get('phone_number')
+        
+        if not phone_number:
+            print("No phone number found in session or cookies")
+            return redirect('authentication:login')
+
+        print(f"Fetching orders for worker with phone: {phone_number}")  # Debug log
+        
+        with connection.cursor() as cursor:
+            # First verify if the user is a worker
+            cursor.execute("""
+                SELECT EXISTS(
+                    SELECT 1 FROM "WORKER" w
+                    JOIN "USER" u ON w.id = u.id
+                    WHERE u.phonenum = %s
+                )
+            """, [phone_number])
+            is_worker = cursor.fetchone()[0]
+
+            if not is_worker:
+                print(f"User {phone_number} is not a worker")  # Debug log
+                return redirect('main:show_main')
+
+            cursor.execute("""
+                WITH LatestStatus AS (
+                    SELECT 
+                        serviceTrId,
+                        statusId,
+                        date,
+                        ROW_NUMBER() OVER (PARTITION BY serviceTrId ORDER BY date DESC) as rn
+                    FROM "TR_ORDER_STATUS"
+                )
+                SELECT 
+                    tso.Id as id,
+                    tso.orderDate as orderdate,
+                    tso.totalPrice as totalprice,
+                    ssc.SubcategoryName as service_name,
+                    u.name as customer_name,
+                    os.Status as status
+                FROM "TR_SERVICE_ORDER" tso
+                JOIN "USER" u ON tso.customerId = u.id
+                LEFT JOIN "SERVICE_SESSION" ss ON tso.serviceCategoryId = ss.SubcategoryId 
+                    AND tso.Session = ss.Session
+                LEFT JOIN "SERVICE_SUBCATEGORY" ssc ON ss.SubcategoryId = ssc.Id
+                JOIN LatestStatus ls ON tso.Id = ls.serviceTrId AND ls.rn = 1
+                JOIN "ORDER_STATUS" os ON ls.statusId = os.id
+                JOIN "USER" w ON tso.workerId = w.id
+                WHERE w.phonenum = %s
+                ORDER BY 
+                    CASE 
+                        WHEN os.Status = 'Service in Progress' THEN 1
+                        WHEN os.Status = 'Waiting for Payment' THEN 2
+                        ELSE 3
+                    END,
+                    tso.orderDate DESC
+            """, [phone_number])
+            
+            columns = [col[0] for col in cursor.description]
+            orders = [dict(zip(columns, row)) for row in cursor.fetchall()]
+            
+            print(f"Found {len(orders)} orders for worker")  # Debug log
+            
+        return render(request, 'worker_service_bookings.html', {'orders': orders})
+
+    except Exception as e:
+        print(f"Error in worker_service_bookings: {str(e)}")  # Debug log
+        import traceback
+        traceback.print_exc()
+        return render(request, 'error.html', {'error_message': str(e)})
+
+@csrf_exempt
+@require_POST
+def update_order_status(request):
+    try:
+        data = json.loads(request.body)
+        order_id = data.get('order_id')
+        new_status = data.get('status')
+
+        with transaction.atomic():
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT id FROM "ORDER_STATUS" WHERE status = %s
+                """, [new_status])
+                status_id = cursor.fetchone()
+
+                if not status_id:
+                    raise ValueError(f"Invalid status: {new_status}")
+
+                cursor.execute("""
+                    INSERT INTO "TR_ORDER_STATUS" (servicetrid, statusid, date)
+                    VALUES (%s, %s, CURRENT_TIMESTAMP)
+                """, [order_id, status_id[0]])
+
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
