@@ -94,31 +94,35 @@ def subcategory_page(request, subcategory_id):
                 session_number = int(session_name.split(" ")[1])  
                 parsed_order_date = datetime.datetime.strptime(order_date, "%d/%m/%Y")
 
-                ### NEEDS TO BE FIXED
+                print(discount_code)
 
                 with connection.cursor() as cursor:
-
-                    cursor.execute("""
-                    SELECT discount,code FROM "DISCOUNT" 
-                    WHERE "code" = %s
-                                   """,[discount_code])
-                    
-                    discount_code = cursor.fetchone()[1]
+                ### NEEDS TO BE FIXED
                     if discount_code[0] == 'V':
-                        print("Voucher")
                         cursor.execute("""
-                    SELECT discount,code FROM "DISCOUNT" 
-                    WHERE "code" = %s
-                                   """,[discount_code])
-                    else:
-                        print("Promo")
+                        SELECT discount,code FROM NATURAL JOIN "DISCOUNT"
+                        WHERE "code" = %s
+                                    """,[discount_code])
+                        
+                        voucher_ribet = cursor.fetchone()[0]
+
+                        cursor.execute(
+                            """
+                            SELECT "discount" FROM "DISCOUNT" WHERE "code" = %s
+                            """, [discount_code]
+                        )
+                        
+                    if discount_code[0] == 'P':
                         cursor.execute("""
-                    SELECT discount,code FROM "DISCOUNT" 
-                    WHERE "code" = %s
-                                   """,[discount_code])
+                        SELECT discount FROM "PROMO" NATURAL JOIN "DISCOUNT"
+                        WHERE "code" = %s
+                                    """,[discount_code])
+                        discount_discount = cursor.fetchone()[0]
 
-
-
+                        print(f"Discount: {discount_discount}")
+                        
+                        total_payment = float(total_payment) - float(discount_discount)
+                
                 ### NEEDS TO BE FIXED
 
 
