@@ -19,14 +19,11 @@ def login_user(request):
     if request.method == 'POST':
         phone_number = request.POST.get('phone_number')
         password = request.POST.get('password')
-        messages = []
 
         if not phone_number or not password:
-            messages.append('Username and password are required.')
+            messages.error(request, "Username and password are required.")
+            return render(request, 'login.html')
         
-        if messages:
-            return render(request, 'login.html', {'messages': messages})
-
         try:
             with connection.cursor() as cursor:
                 cursor.execute(rf"""
@@ -38,7 +35,17 @@ def login_user(request):
             if user:
                 user_id = user[0] 
                 print(f"user id: {user_id}")
-
+                user_name = None
+                with connection.cursor() as cursor:
+                    cursor.execute(rf"""
+                    SET search_path TO public;
+                    SELECT name
+                    FROM "USER"
+                    WHERE phonenum = %s;
+                    """, [phone_number])
+                    user_name_data = cursor.fetchone()
+                    if user_name_data:
+                        user_name = user_name_data[0]
                 # Determine the user's role
                 user_role = None
                 with connection.cursor() as cursor:
@@ -62,19 +69,21 @@ def login_user(request):
                     request.session['phone_number'] = phone_number
                     response = HttpResponseRedirect(reverse("main:show_main"))
                     response.set_cookie('phone_number', phone_number)
+                    response.set_cookie('username', user_name)  # Set user name as a cookie
                     response.set_cookie('user_role', user_role)  # Set user role cookie
                     response.set_cookie('last_login', str(datetime.datetime.now()))
                     response.set_cookie('user_id', user_id)
                     return response
                 else:
-                    messages.append('Unable to determine user role.')
+                    messages.error(request, "Unable to determine user role")
+                    
             else:
-                messages.append('Sorry, incorrect username or password. Please try again.')
+                messages.error(request, "Sorry, incorrect username or password. Please try again.")
 
         except Exception as e:
-            messages.append(f"An error occurred: {str(e)}")
+            messages.error(request, f"An error occurred: {str(e)}")
 
-        return render(request, 'login.html', {'messages': messages})
+        return render(request, 'login.html')
 
     return render(request, 'login.html')
 
@@ -88,6 +97,7 @@ def logout_user(request):
     request.session.flush()
     response.delete_cookie('last_login')
     response.delete_cookie('phone_number')
+    response.delete_cookie('user_id')
     return response
 
 def choose_role(request):

@@ -8,7 +8,6 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from uuid import uuid4
 import datetime
-import random
 from django.contrib import messages
 
 def login_required(view_func=None, login_url='authentication:login'):
