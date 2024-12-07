@@ -97,21 +97,19 @@ def subcategory_page(request, subcategory_id):
                 print(discount_code)
 
                 with connection.cursor() as cursor:
-                ### NEEDS TO BE FIXED
                     if discount_code[0] == 'V':
                         cursor.execute("""
-                        SELECT discount,code FROM NATURAL JOIN "DISCOUNT"
+                        SELECT * FROM "VOUCHER" NATURAL JOIN "DISCOUNT"
                         WHERE "code" = %s
                                     """,[discount_code])
                         
-                        voucher_ribet = cursor.fetchone()[0]
+                        voucher_ribet = cursor.fetchone()
+                        voucher_cut = voucher_ribet[4]
+                        print(f"Voucher cut : {voucher_cut}")
+                        total_payment = float(total_payment) - float(voucher_cut)
 
-                        cursor.execute(
-                            """
-                            SELECT "discount" FROM "DISCOUNT" WHERE "code" = %s
-                            """, [discount_code]
-                        )
-                        
+
+
                     if discount_code[0] == 'P':
                         cursor.execute("""
                         SELECT discount FROM "PROMO" NATURAL JOIN "DISCOUNT"
