@@ -4,10 +4,14 @@
         <div class="flex items-center space-x-4">
             <h1 class="text-xl md:text-2xl mb-1 font-bold text-black">Qlean</h1>
             <span class="md:inline-block text-sm md:text-base text-black font-medium">
-                Welcome, {{ user.user_role }} {{ user.name }}!
+                {% if request.COOKIES.user_role %}
+                    Welcome, {{ request.COOKIES.user_role|title }} {{ request.COOKIES.phone_number }}!
+                {% else %}
+                    Welcome to Qlean!
+                {% endif %}
             </span>
         </div>
-
+        
         <!-- Right section -->
         <div class="hidden md:flex items-center space-x-4 lg:space-x-8 ml-auto">
             <a href="{% url 'main:show_main' %}" class="text-sm md:text-base text-black font-semibold hover:text-gray-600 transition">Home</a>
