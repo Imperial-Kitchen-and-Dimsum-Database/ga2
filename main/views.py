@@ -94,10 +94,13 @@ def subcategory_page(request, subcategory_id):
                 session_number = int(session_name.split(" ")[1])  
                 parsed_order_date = datetime.datetime.strptime(order_date, "%d/%m/%Y")
 
-                print(discount_code)
+                print(f"Discount code is {discount_code}")
 
                 with connection.cursor() as cursor:
-                    if discount_code[0] == 'V':
+                    if not discount_code:
+                        pass
+
+                    if discount_code and discount_code[0] == 'V':
                         cursor.execute("""
                         SELECT * FROM "VOUCHER" NATURAL JOIN "DISCOUNT"
                         WHERE "code" = %s
@@ -105,12 +108,14 @@ def subcategory_page(request, subcategory_id):
                         
                         voucher_ribet = cursor.fetchone()
                         voucher_cut = voucher_ribet[4]
-                        print(f"Voucher cut : {voucher_cut}")
+
+
+                        
                         total_payment = float(total_payment) - float(voucher_cut)
 
 
 
-                    if discount_code[0] == 'P':
+                    if discount_code and discount_code[0] == 'P':
                         cursor.execute("""
                         SELECT discount FROM "PROMO" NATURAL JOIN "DISCOUNT"
                         WHERE "code" = %s
@@ -121,8 +126,6 @@ def subcategory_page(request, subcategory_id):
                         
                         total_payment = float(total_payment) - float(discount_discount)
                 
-                ### NEEDS TO BE FIXED
-
 
                     cursor.execute("""
                         INSERT INTO "TR_SERVICE_ORDER" (
