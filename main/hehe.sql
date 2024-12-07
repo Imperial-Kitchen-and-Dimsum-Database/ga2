@@ -1,0 +1,11 @@
+DELIMITER $$
+
+CREATE TRIGGER validate_voucher
+BEFORE INSERT ON "TR_SERVICE_ORDER"
+BEGIN
+    IF 
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Salary must be at least 10,000';
+    END IF;
+END$$
+
+DELIMITER ;
