@@ -55,6 +55,8 @@ def subcategory_page(request, subcategory_id):
     user_role = request.COOKIES.get('user_role')
     has_joined = False
 
+    print(f"USER ID ={user_id}")
+
     if request.method == "POST":
         if "join_worker" in request.POST:  
             try:
@@ -264,7 +266,7 @@ def subcategory_page(request, subcategory_id):
         'payment_methods': payment_methods,
         'user_role': user_role,
         'testimonials': testimonials,
-        'user_id': str(user_id)
+        'main_user_id': str(user_id)
     }
 
     return render(request, 'subcategory_page.html', context)
