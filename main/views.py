@@ -340,8 +340,22 @@ def user_service_bookings(request):
         """, [user_id])
         new_orders = cursor.fetchall()
 
+        cursor.execute("""
+                SELECT Id
+                FROM "ORDER_STATUS"
+                WHERE Status = 'Waiting for Payment'
+            """)
+        waiting_payment_id = cursor.fetchone()
+        
+        cursor.execute("""
+                SELECT Id
+                FROM "ORDER_STATUS"
+                WHERE Status = 'Looking for Nearby Worker'
+            """)
+        looking_worker_id = cursor.fetchone()
+
         for order_id, payment_method in new_orders:
-            initial_status_id = ("8e6a889d-c209-41bc-8b40-d4e6736960ff" if payment_method == "MyPay" else "a04e23bc-c655-4eec-8657-4733bed460f6")
+            initial_status_id = (waiting_payment_id if payment_method == "MyPay" else looking_worker_id)
 
             cursor.execute("""
                 INSERT INTO "TR_ORDER_STATUS" (serviceTrId, statusId, date)
