@@ -6,6 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db import connection
 from django.db.utils import IntegrityError
 
+
 import uuid
 from django.shortcuts import render, redirect
 from django.db import connection
@@ -93,7 +94,7 @@ def logout_user(request):
                 cursor.execute(rf"""
                 SET search_path to public; 
                 """)
-    response = HttpResponseRedirect(reverse('main:show_main'))
+    response = HttpResponseRedirect(reverse('authentication:hero'))
     request.session.flush()
     response.delete_cookie('last_login')
     response.delete_cookie('phone_number')
@@ -139,13 +140,13 @@ def register_appuser(request):
                 VALUES (%s, %s);
                 """, [user_id, 0])
             
-            messages.success(request, "Registration successful!")
+            messages.success(request, "Appuser registration successful!")
             return redirect('authentication:login')
         
         except Exception as e:
             messages.error(request, f"An error occurred: {str(e)}")
             return render(request, 'register_appuser.html')
-    
+        
     return render(request, 'register_appuser.html')
 
 def register_worker(request):
