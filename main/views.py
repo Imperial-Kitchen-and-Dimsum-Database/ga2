@@ -112,10 +112,6 @@ def subcategory_page(request, subcategory_id):
 
 
 
-                        expiration_date = datetime.datetime.now + datetime.timedelta(days=voucher_valid)
-
-
-
                         # Check if the user has bought the voucher or not
 
                         cursor.execute("""

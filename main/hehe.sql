@@ -1,43 +1,52 @@
-CREATE OR REPLACE FUNCTION validate_voucher()
+-- Create or replace the function for voucher validation
+CREATE OR REPLACE FUNCTION voucher_validation()
 RETURNS TRIGGER AS $$
+DECLARE
+    voucher_usage INT;
+    voucher_limit INT;
+    voucher_expiration DATE;
 BEGIN
-    -- Declare variables to hold voucher details
-    DECLARE 
-        v_user_quota INT;
-        v_expiration_date DATE;
-        v_already_use INT;
+    IF NEW.discountcode IS NOT NULL THEN
+        -- Get the voucher usage record for this user and voucher
+        SELECT alreadyuse
+        INTO voucher_usage
+        FROM TR_VOUCHER_PAYMENT
+        WHERE customerid = NEW.customerid AND voucherid = NEW.discountcode;
 
-    -- Fetch voucher details
-    SELECT 
-        V.userquota,
-        TVP.expirationdate,
-        COALESCE(TVP.alreadyuse, 0) AS alreadyuse
-    INTO 
-        v_user_quota,
-        v_expiration_date,
-        v_already_use
-    FROM VOUCHER V
-    LEFT JOIN TR_VOUCHER_PAYMENT TVP 
-        ON V.code = TVP.voucherid
-    WHERE V.code = NEW.voucherid;
+        IF NOT FOUND THEN
+            RAISE EXCEPTION 'Voucher % not purchased by user.', NEW.discountcode;
+        END IF;
 
-    -- Check if the voucher has expired
-    IF CURRENT_DATE > v_expiration_date THEN
-        RAISE EXCEPTION 'Error: The voucher has expired.';
+        -- Check expiration date
+        SELECT expirationdate
+        INTO voucher_expiration
+        FROM VOUCHER
+        WHERE code = NEW.discountcode;
+
+        IF voucher_expiration < CURRENT_DATE THEN
+            RAISE EXCEPTION 'Voucher % has expired.', NEW.discountcode;
+        END IF;
+
+        -- Get the usage limit from VOUCHER table
+        SELECT userquota
+        INTO voucher_limit
+        FROM VOUCHER
+        WHERE code = NEW.discountcode;
+
+        -- If voucher_limit is NOT NULL, check if usage limit exceeded
+        IF voucher_limit IS NOT NULL THEN
+            IF voucher_usage >= voucher_limit THEN
+                RAISE EXCEPTION 'Voucher % usage limit exceeded.', NEW.discountcode;
+            END IF;
+        END IF;
     END IF;
 
-    -- Check if the voucher usage limit has been exceeded
-    IF v_already_use >= v_user_quota THEN
-        RAISE EXCEPTION 'Error: The voucher usage limit has been exceeded.';
-    END IF;
-
-    -- If all validations pass, allow the insertion
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
--- Bind the trigger to the TR_SERVICE_ORDER table
-CREATE TRIGGER validate_voucher_trigger
+-- Create the trigger for voucher validation
+CREATE TRIGGER voucher_validation_trigger
 BEFORE INSERT ON TR_SERVICE_ORDER
 FOR EACH ROW
-EXECUTE FUNCTION validate_voucher();
+EXECUTE FUNCTION voucher_validation();
