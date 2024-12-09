@@ -124,38 +124,21 @@ def subcategory_page(request, subcategory_id):
                         """, [discount_code, user_id])
                         exist = cursor.fetchone()
 
-
                         
 
                         if exist:
                             total_payment = float(total_payment) - float(voucher_cut)
+                            existing_id = exist[0]
                             already_use = exist[1] + 1
 
-
-                        cursor.execute("""
-                            INSERT INTO "TR_SERVICE_ORDER" (
-                                Id, orderDate, serviceDate, serviceTime, 
-                                TotalPrice, customerId, serviceCategoryId, Session, 
-                                discountCode, paymentMethodId, alreadyuse
+                            cursor.execute(
+                                """
+                                UPDATE "TR_VOUCHER_PAYMENT"
+                                SET alreadyuse = %s
+                                WHERE id = %s
+                                """,
+                                [already_use, existing_id]
                             )
-                            VALUES (
-                                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
-                            )
-                            """, [
-                            str(uuid4()),  
-                            parsed_order_date,
-                            parsed_order_date,  
-                            parsed_order_date,  
-                            total_payment,
-                            user_id,
-                            subcategory_id,
-                            session_number,
-                            discount_code,
-                            payment_method_id,
-                            already_use + 1
-                        ])  
-
-
 
                     if discount_code and discount_code[0] == 'P':
                         cursor.execute("""
@@ -170,27 +153,27 @@ def subcategory_page(request, subcategory_id):
                         total_payment = float(total_payment) - float(discount_discount)
                 
 
-                        cursor.execute("""
-                            INSERT INTO "TR_SERVICE_ORDER" (
-                                Id, orderDate, serviceDate, serviceTime, 
-                                TotalPrice, customerId, serviceCategoryId, Session, 
-                                discountCode, paymentMethodId
-                            )
-                            VALUES (
-                                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
-                            )
-                            """, [
-                            str(uuid4()),  
-                            parsed_order_date,
-                            parsed_order_date,  
-                            parsed_order_date,  
-                            total_payment,
-                            user_id,
-                            subcategory_id,
-                            session_number,
-                            discount_code,
-                            payment_method_id,
-                            ])
+                    cursor.execute("""
+                        INSERT INTO "TR_SERVICE_ORDER" (
+                            Id, orderDate, serviceDate, serviceTime, 
+                            TotalPrice, customerId, serviceCategoryId, Session, 
+                            discountCode, paymentMethodId
+                        )
+                        VALUES (
+                            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                        )
+                        """, [
+                        str(uuid4()),  
+                        parsed_order_date,
+                        parsed_order_date,  
+                        parsed_order_date,  
+                        total_payment,
+                        user_id,
+                        subcategory_id,
+                        session_number,
+                        discount_code,
+                        payment_method_id,
+                        ])
                 return redirect("main:user_service_bookings")
 
             except Exception as e:

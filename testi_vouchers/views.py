@@ -101,7 +101,8 @@ def purchase_voucher(request):
                     purchase_date = datetime.datetime.now()
                     expiration_date = purchase_date + datetime.timedelta(days=voucher[1] + 30)
                     print(f"Expiration date is {expiration_date}")
-                    voucher_uses = voucher[2]
+                    voucher_uses = 0
+                    valid_uses = voucher[2]
                     print(f"Voucher uses is {voucher_uses}")
 
                     cursor.execute("""  
@@ -110,7 +111,7 @@ def purchase_voucher(request):
 
                     context = {
                         'voucher_code': voucher_code,
-                        'voucher_uses': voucher_uses,
+                        'voucher_uses': valid_uses,
                         'valid_until': expiration_date,       
                     }
 
