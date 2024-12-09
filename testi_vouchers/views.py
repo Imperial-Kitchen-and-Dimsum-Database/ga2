@@ -99,8 +99,10 @@ def purchase_voucher(request):
                     tr_pv_id = uuid.uuid4()
                     mypay = '3ddee865-2af9-4188-b2f9-7d601a325ea9'
                     purchase_date = datetime.datetime.now()
-                    expiration_date = purchase_date + datetime.timedelta(days=voucher[1])
+                    expiration_date = purchase_date + datetime.timedelta(days=voucher[1] + 30)
+                    print(f"Expiration date is {expiration_date}")
                     voucher_uses = voucher[2]
+                    print(f"Voucher uses is {voucher_uses}")
 
                     cursor.execute("""  
                     INSERT INTO "TR_VOUCHER_PAYMENT" VALUES (%s, %s, %s, %s, %s, %s, %s)

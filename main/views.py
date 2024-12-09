@@ -101,44 +101,66 @@ def subcategory_page(request, subcategory_id):
 
                     if discount_code and discount_code[0] == 'V':
                         cursor.execute("""
-                        SELECT * FROM "VOUCHER" NATURAL JOIN "DISCOUNT"
+                        SELECT * 
+                        FROM "VOUCHER" NATURAL JOIN "DISCOUNT"
                         WHERE "code" = %s
                                     """,[discount_code])
                         
                         voucher_ribet = cursor.fetchone()
                         voucher_cut = voucher_ribet[4]
-                        voucher_valid = voucher_ribet[1]
-                        voucher_uses = voucher_ribet[2]
+                        already_use = 0
 
 
 
                         # Check if the user has bought the voucher or not
 
                         cursor.execute("""
-
                             SELECT TVP.id, alreadyuse
-
                             FROM "TR_VOUCHER_PAYMENT" TVP
-
                             JOIN "VOUCHER" V ON V."code" = TVP."voucherid"
-
                             JOIN "CUSTOMER" C ON C."id" = TVP."customerid"
-
-                            WHERE V."code" = %s AND P.user_id = %s
+                            WHERE V."code" = %s AND TVP."customerid" = %s
 
                         """, [discount_code, user_id])
+                        exist = cursor.fetchone()
+
 
                         
 
-                        if cursor.fetchone():
-
+                        if exist:
                             total_payment = float(total_payment) - float(voucher_cut)
+                            already_use = exist[1] + 1
+
+
+                        cursor.execute("""
+                            INSERT INTO "TR_SERVICE_ORDER" (
+                                Id, orderDate, serviceDate, serviceTime, 
+                                TotalPrice, customerId, serviceCategoryId, Session, 
+                                discountCode, paymentMethodId, alreadyuse
+                            )
+                            VALUES (
+                                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                            )
+                            """, [
+                            str(uuid4()),  
+                            parsed_order_date,
+                            parsed_order_date,  
+                            parsed_order_date,  
+                            total_payment,
+                            user_id,
+                            subcategory_id,
+                            session_number,
+                            discount_code,
+                            payment_method_id,
+                            already_use + 1
+                        ])  
 
 
 
                     if discount_code and discount_code[0] == 'P':
                         cursor.execute("""
-                        SELECT discount FROM "PROMO" NATURAL JOIN "DISCOUNT"
+                        SELECT discount 
+                        FROM "PROMO" NATURAL JOIN "DISCOUNT"
                         WHERE "code" = %s
                                     """,[discount_code])
                         discount_discount = cursor.fetchone()[0]
@@ -148,27 +170,27 @@ def subcategory_page(request, subcategory_id):
                         total_payment = float(total_payment) - float(discount_discount)
                 
 
-                    cursor.execute("""
-                        INSERT INTO "TR_SERVICE_ORDER" (
-                            Id, orderDate, serviceDate, serviceTime, 
-                            TotalPrice, customerId, serviceCategoryId, Session, 
-                            discountCode, paymentMethodId
-                        )
-                        VALUES (
-                            %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
-                        )
-                    """, [
-                        str(uuid4()),  
-                        parsed_order_date,
-                        parsed_order_date,  
-                        parsed_order_date,  
-                        total_payment,
-                        user_id,
-                        subcategory_id,
-                        session_number,
-                        discount_code,
-                        payment_method_id,
-                    ])
+                        cursor.execute("""
+                            INSERT INTO "TR_SERVICE_ORDER" (
+                                Id, orderDate, serviceDate, serviceTime, 
+                                TotalPrice, customerId, serviceCategoryId, Session, 
+                                discountCode, paymentMethodId
+                            )
+                            VALUES (
+                                %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
+                            )
+                            """, [
+                            str(uuid4()),  
+                            parsed_order_date,
+                            parsed_order_date,  
+                            parsed_order_date,  
+                            total_payment,
+                            user_id,
+                            subcategory_id,
+                            session_number,
+                            discount_code,
+                            payment_method_id,
+                            ])
                 return redirect("main:user_service_bookings")
 
             except Exception as e:
