@@ -491,6 +491,10 @@
             const phoneNumber = document.getElementById('phoneNumber').value;
             const amount = parseFloat(document.getElementById('sendAmount').value);
 
+            // Debug logs
+            console.log('Phone:', phoneNumber);
+            console.log('Amount:', amount);
+
             // Validation
             if (!phoneNumber || phoneNumber.length < 10) {
                 alert('Please enter a valid phone number');
@@ -501,7 +505,41 @@
                 return;
             }
 
-            
+            try {
+                // Get CSRF token
+                const csrftoken = getCookie('csrftoken');
+                console.log('CSRF Token:', csrftoken); // Debug log
+
+                const response = await fetch('/mypay/transfer/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: JSON.stringify({
+                        phone: phoneNumber,
+                        amount: amount
+                    })
+                });
+
+                console.log('Response status:', response.status); // Debug log
+
+                const data = await response.json();
+                console.log('Response data:', data); // Debug log
+                
+                if (data.success) {
+                    document.querySelector('.text-3xl.font-bold').textContent = 
+                        `$${data.new_balance ? data.new_balance.toFixed(2) : '0.00'}`;
+                    alert('Transfer successful!');
+                    closeSendModal();
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Transfer failed');
+                }
+            } catch (error) {
+                console.error('Transfer error:', error); // Debug log
+                alert('Transfer failed: ' + error.message);
+            }
         });
 
         function openWithdrawModal() {

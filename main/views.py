@@ -110,6 +110,7 @@ def subcategory_page(request, subcategory_id):
                         voucher_cut = voucher_ribet[4]
                         already_use = 0
 
+                        total_payment = float(total_payment) - float(voucher_cut)
 
 
                         # Check if the user has bought the voucher or not
@@ -124,21 +125,14 @@ def subcategory_page(request, subcategory_id):
                         """, [discount_code, user_id])
                         exist = cursor.fetchone()
 
+
                         
 
                         if exist:
-                            total_payment = float(total_payment) - float(voucher_cut)
-                            existing_id = exist[0]
-                            already_use = exist[1] + 1
+                            already_use = exist[1]
 
-                            cursor.execute(
-                                """
-                                UPDATE "TR_VOUCHER_PAYMENT"
-                                SET alreadyuse = %s
-                                WHERE id = %s
-                                """,
-                                [already_use, existing_id]
-                            )
+
+
 
                     if discount_code and discount_code[0] == 'P':
                         cursor.execute("""
@@ -157,7 +151,7 @@ def subcategory_page(request, subcategory_id):
                         INSERT INTO "TR_SERVICE_ORDER" (
                             Id, orderDate, serviceDate, serviceTime, 
                             TotalPrice, customerId, serviceCategoryId, Session, 
-                            discountCode, paymentMethodId
+                            discountCode, paymentMethodId, 
                         )
                         VALUES (
                             %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
